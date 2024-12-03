@@ -1,0 +1,30 @@
+{
+  "development": {
+    "username": "neondb_owner",
+    "password": "m1pZsf0EOrGq",
+    "database": "neondb",
+    "host": "ep-sparkling-scene-a5cobmui.us-east-2.aws.neon.tech",
+    "dialect": "postgres",
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
+  },
+  "test": {
+    "username": "neondb_owner",
+    "password": "m1pZsf0EOrGq",
+    "database": "neondb",
+    "host": "ep-sparkling-scene-a5cobmui.us-east-2.aws.neon.tech",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "neondb_owner",
+    "password": "m1pZsf0EOrGq",
+    "database": "neondb",
+    "host": "ep-sparkling-scene-a5cobmui.us-east-2.aws.neon.tech",
+    "dialect": "postgres"
+  }
+}
+
