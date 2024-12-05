@@ -2,7 +2,7 @@
 const { Op, where } = require("sequelize");
 const { Usuario } = require("../../models"); // Certifique-se de que este caminho está correto
 const bcrypt = require("bcrypt");
-const users = require("../../models/users");
+const users = require("../models/users");
 const { validationResult } = require("express-validator");
 
 exports.createUsuario = async (req, res) => {

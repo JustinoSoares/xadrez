@@ -15,16 +15,15 @@
   "test": {
     "username": "neondb_owner",
     "password": "m1pZsf0EOrGq",
-    "database": "neondb",
+    "database": "neondb_test", // Use um banco de dados diferente para testes
     "host": "ep-sparkling-scene-a5cobmui.us-east-2.aws.neon.tech",
     "dialect": "postgres"
   },
   "production": {
     "username": "neondb_owner",
     "password": "m1pZsf0EOrGq",
-    "database": "neondb",
+    "database": "neondb_production", // Use um banco de dados diferente para produção
     "host": "ep-sparkling-scene-a5cobmui.us-east-2.aws.neon.tech",
     "dialect": "postgres"
   }
 }
-

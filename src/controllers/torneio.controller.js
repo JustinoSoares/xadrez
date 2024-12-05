@@ -1,6 +1,6 @@
 // src/controllers/torneioController.js
 
-const Torneio = require("../../models/torneio"); // Ajuste o caminho conforme necessário
+const Torneio = require("../models/torneio"); // Ajuste o caminho conforme necessário
 const bcrypt = require("bcrypt");
 exports.createTorneio = async (req, res) => {
   try {
