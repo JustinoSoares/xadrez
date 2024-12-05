@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "neondb_owner",
-    "password": "m1pZsf0EOrGq",
-    "database": "neondb",
-    "host": "ep-sparkling-scene-a5cobmui.us-east-2.aws.neon.tech",
+    "username": "xadrez_user",
+    "password": "HGzkWbfUw887rCT8PoJkNVVosdWjs93T",
+    "database": "xadrez",
+    "host": "dpg-ct8no7d2ng1s739o4l1g-a.frankfurt-postgres.render.com",
     "dialect": "postgres",
     "dialectOptions": {
       "ssl": {
@@ -14,17 +14,29 @@
   },
   "test": {
     "username": "neondb_owner",
-    "password": "m1pZsf0EOrGq",
+    "password": "XkglI30EBJLu",
     "database": "neondb",
-    "host": "ep-sparkling-scene-a5cobmui.us-east-2.aws.neon.tech",
-    "dialect": "postgres"
+    "host": "ep-damp-breeze-a5h0r5ox.us-east-2.aws.neon.tech",
+    "dialect": "postgres",
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
   },
   "production": {
     "username": "neondb_owner",
-    "password": "m1pZsf0EOrGq",
+    "password": "XkglI30EBJLu",
     "database": "neondb",
-    "host": "ep-sparkling-scene-a5cobmui.us-east-2.aws.neon.tech",
-    "dialect": "postgres"
+    "host": "ep-damp-breeze-a5h0r5ox.us-east-2.aws.neon.tech",
+    "dialect": "postgres",
+    "dialectOptions": {
+      "ssl": {
+        "require": true,
+        "rejectUnauthorized": false
+      }
+    }
   }
 }
 

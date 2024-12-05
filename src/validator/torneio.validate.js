@@ -1,6 +1,8 @@
-const { Body } = require("express-validator");
+const { body } = require("express-validator");
 
 const create = [
-    Body("nome").exists().withMessage("O nome do torneio é obrigatório."),
-    Body("pass").exists().withMessage("Digite a pass."),
+  body("name").notEmpty().withMessage("O name é Obrigatório."),
+  body("pass").notEmpty().withMessage("A pass é obrigatória."),
 ];
+
+module.exports = { create };

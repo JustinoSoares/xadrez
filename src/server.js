@@ -1,7 +1,7 @@
 // src/index.js
 
 const express = require('express');
-const { sequelize } = require('../models'); // Certifique-se de importar corretamente
+const { sequelize } = require('../models/index.js'); // Certifique-se de importar corretamente
 const usuarioRouter = require('./routes/user.router');
 const torneioRouter = require('./routes/torneio.router');
 
@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/", usuarioRouter);
-app.use("/", torneioRouter);
+app.use("/api", torneioRouter);
 
 // Testando a conexão antes de iniciar o servidor
 sequelize.authenticate()
