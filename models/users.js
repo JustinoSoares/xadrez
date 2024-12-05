@@ -1,7 +1,6 @@
-// models/usuario.js
+// src/models/usuario.js
 
 const { Model, DataTypes } = require("sequelize");
-const { v4: uuidv4 } = require("uuid");
 
 module.exports = (sequelize) => {
   class Usuario extends Model {
@@ -18,7 +17,6 @@ module.exports = (sequelize) => {
         foreignKey: "jogador1Id", // Para jogador1
         as: "adversariosComoJogador1",
       });
-
       Usuario.hasMany(models.Adversarios, {
         foreignKey: "jogador2Id", // Para jogador2
         as: "adversariosComoJogador2",
@@ -30,7 +28,7 @@ module.exports = (sequelize) => {
     {
       id: {
         type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4, // Gera um UUID v4 automaticamente
+        defaultValue: DataTypes.UUIDV4,
         primaryKey: true,
       },
       username: {
@@ -50,6 +48,7 @@ module.exports = (sequelize) => {
       tipo_usuario: {
         type: DataTypes.ENUM("admin", "normal"),
         allowNull: false,
+        defaultValue : "normal",
       },
       pontos: {
         type: DataTypes.INTEGER,

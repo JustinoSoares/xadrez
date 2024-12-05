@@ -1,59 +1,62 @@
-// models/Adversarios.js
+// models/adversarios.js
 
-const { Model, DataTypes } = require('sequelize');
+const { Model, DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
   class Adversarios extends Model {
     static associate(models) {
       Adversarios.belongsTo(models.Torneio, {
-        foreignKey: 'torneioId',
-        as: 'torneio',
+        foreignKey: "torneioId",
+        as: "torneio",
       });
       Adversarios.belongsTo(models.Usuario, {
-        foreignKey: 'jogador1Id',
-        as: 'jogador1',
+        foreignKey: "jogador1Id",
+        as: "jogador1",
       });
       Adversarios.belongsTo(models.Usuario, {
-        foreignKey: 'jogador2Id',
-        as: 'jogador2',
+        foreignKey: "jogador2Id",
+        as: "jogador2",
       });
     }
   }
 
-  Adversarios.init({
-    id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
-      primaryKey: true,
-    },
-    torneioId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'Torneios',
-        key: 'id',
+  Adversarios.init(
+    {
+      id: {
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+        primaryKey: true,
+      },
+      torneioId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: 'Torneios',
+          key: 'id',
+        },
+      },
+      jogador1Id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: 'Usuarios',
+          key: 'id',
+        },
+      },
+      jogador2Id: {
+        type: DataTypes.UUID,
+        allowNull: false,
+        references: {
+          model: 'Usuarios',
+          key: 'id',
+        },
       },
     },
-    jogador1Id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'Usuarios',
-        key: 'id',
-      },
-    },
-    jogador2Id: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      references: {
-        model: 'Usuarios',
-        key: 'id',
-      },
-    },
-  }, {
-    sequelize,
-    modelName: 'Adversarios',
-  });
+    {
+      sequelize,
+      modelName: "Adversarios",
+    }
+  );
 
   return Adversarios;
 };

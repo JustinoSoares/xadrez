@@ -5,7 +5,7 @@ const torneioController = require('../controllers/torneio.controller');
 
 const router = Router();
 
-router.post('/torneios', torneioController.createTorneio);
-router.get('/torneios', torneioController.getTorneios);
+router.post('/torneios/create', torneioController.createTorneio);
+router.get('/torneios/all', torneioController.getTorneios);
 
 module.exports = router;
