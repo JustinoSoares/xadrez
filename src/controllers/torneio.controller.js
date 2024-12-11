@@ -5,6 +5,7 @@ const Torneio = db.Torneio; // Ajuste o caminho conforme necessário
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 exports.createTorneio = async (req, res) => {
+  
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
