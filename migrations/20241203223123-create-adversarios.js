@@ -37,6 +37,11 @@ module.exports = {
         },
         onDelete: 'CASCADE', // O que acontece ao deletar um usuário
       },
+      status: {
+        type: Sequelize.ENUM('open', 'closed'),
+        defuktValue: 'open',
+        allowNull: false,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

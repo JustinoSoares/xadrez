@@ -51,6 +51,11 @@ module.exports = (sequelize) => {
           key: 'id',
         },
       },
+      status: {
+        type: DataTypes.ENUM('open', 'closed'),
+        defaultValue: 'open',
+        allowNull: false,
+      },
     },
     {
       sequelize,

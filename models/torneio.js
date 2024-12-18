@@ -44,6 +44,11 @@ module.exports = (sequelize) => {
           key: "id", // Chave primária na tabela referenciada
         },
       },
+      status: {
+        type: DataTypes.ENUM('open', 'closed'),
+        defaultValue: 'open',
+        allowNull: false,
+      },
     },
     {
       sequelize,

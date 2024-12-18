@@ -1,24 +1,34 @@
-// migrations/XXXXXX-create-torneio.js
+// migrations/XXXXXX-create-adversarios.js
 
 'use strict';
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('Torneios', {
+    await queryInterface.createTable('Adversarios', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
       },
-      name: {
-        type: Sequelize.STRING,
+      torneioId: {
+        type: Sequelize.UUID,
         allowNull: false,
+        references: {
+          model: 'Torneios', // Nome da tabela referenciada
+          key: 'id', // Chave primária na tabela referenciada
+        },
+        onDelete: 'CASCADE', // O que acontece ao deletar um torneio
       },
-      pass: {
-        type: Sequelize.STRING,
+      jogador1Id: {
+        type: Sequelize.UUID,
         allowNull: false,
+        references: {
+          model: 'Usuarios', // Nome da tabela referenciada
+          key: 'id', // Chave primária na tabela referenciada
+        },
+        onDelete: 'CASCADE', // O que acontece ao deletar um usuário
       },
-      usuarioId: {
+      jogador2Id: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
@@ -44,6 +54,6 @@ module.exports = {
   },
 
   down: async (queryInterface) => {
-    await queryInterface.dropTable('Torneios');
+    await queryInterface.dropTable('Adversarios');
   }
 };

@@ -12,7 +12,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/", usuarioRouter);
-app.use("/api", torneioRouter);
+app.use("/", torneioRouter);
 
 // Testando a conexão antes de iniciar o servidor
 sequelize.authenticate()
