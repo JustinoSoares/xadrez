@@ -11,6 +11,7 @@ const sequelize = new Sequelize(
   process.env.URL_POSTGRES,
   {
     dialect: process.env.DIALECT,
+    dialectModule: pg,
     dialectOptions: {
       ssl: {
         require: true,
