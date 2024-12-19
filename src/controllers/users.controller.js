@@ -13,7 +13,7 @@ exports.createUsuario = async (req, res) => {
       return res.status(422).json({ errors: errors.array() });
     }
 
-    const { username, email, password } = req.body;
+    const { username, email, password, country } = req.body;
     const usuarioExistente = await Usuario.findOne({
       where: { email },
     });
@@ -29,6 +29,7 @@ exports.createUsuario = async (req, res) => {
       username,
       email,
       password: bcrypt.hashSync(password, 10),
+      country: country || "Angola",
     });
 
     const {
@@ -45,6 +46,7 @@ exports.createUsuario = async (req, res) => {
         id: idRes,
         username: usernameRes,
         email: emailRes,
+        country : country || "Angola",
         pontos,
       },
     });
@@ -58,15 +60,30 @@ exports.createUsuario = async (req, res) => {
 
 exports.getUsuarios = async (req, res) => {
   try {
+    const maxLen = req.query.maxLen || 3;
+    const order = req.query.order || "ASC";
+    const offset = req.query.offset || 0;
+    const search = req.query.search || "";
+    const attribute = req.query.attribute || 'id'; 
+
     const usuarios = await Usuario.findAll({
       attributes: [
         "id",
         "username",
         "email",
         "pontos",
+        "country",
         "createdAt",
         "updatedAt",
       ],
+      where: {
+        username: {
+          [Op.like]: `%${search}%`,
+        },
+      },
+      order: [[attribute, order]],
+      limit: maxLen,
+      offset: offset,
       where: {
         tipo_usuario: "normal",
       },
@@ -85,6 +102,9 @@ exports.getUsuarios = async (req, res) => {
       data: usuarios,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      status : false, 
+      error: error.message 
+    });
   }
 };

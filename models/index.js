@@ -1,3 +1,4 @@
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const Sequelize = require('sequelize');
@@ -6,9 +7,9 @@ const env = process.env.NODE_ENV || 'development';
 const config = require('../config/config.json')[env];
 
 const sequelize = new Sequelize(
-  'postgresql://xadrez_user:HGzkWbfUw887rCT8PoJkNVVosdWjs93T@dpg-ct8no7d2ng1s739o4l1g-a.frankfurt-postgres.render.com/xadrez', 
+  process.env.URL_POSTGRES,
   {
-    dialect: 'postgres',
+    dialect: process.env.DIALECT,
     dialectOptions: {
       ssl: {
         require: true,

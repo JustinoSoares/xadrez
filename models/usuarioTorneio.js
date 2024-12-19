@@ -42,6 +42,10 @@ module.exports = (sequelize) => {
       type: DataTypes.ENUM('on', 'off'),
       allowNull: false,
     },
+    pontos: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
   }, {
     sequelize,
     modelName: 'UsuarioTorneio',

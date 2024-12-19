@@ -32,6 +32,10 @@ module.exports = {
         type: Sequelize.ENUM('on', 'off'),
         allowNull: false,
       },
+      pontos : {
+        type: Sequelize.INTEGER,
+        defaultValue: 0,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

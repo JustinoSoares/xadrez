@@ -45,6 +45,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      country: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
       tipo_usuario: {
         type: DataTypes.ENUM("admin", "normal"),
         allowNull: false,

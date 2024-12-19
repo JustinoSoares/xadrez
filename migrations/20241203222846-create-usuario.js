@@ -24,6 +24,11 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      country: {
+        type: Sequelize.STRING,
+        defaultValue: 'Angola',
+        allowNull: false,
+      },
       tipo_usuario: {
         type: Sequelize.ENUM('admin', 'normal'),
         allowNull: false,
