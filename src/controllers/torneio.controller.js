@@ -12,16 +12,29 @@ exports.createTorneio = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
+      return res.status(422).json({ 
+        status: false,
+        errors: errors.array() 
+      });
     }
-    const { name, pass } = req.body;
+    const { name, pass, date_start } = req.body;
     const usuarioId = req.userId;
 
     const torneio = await Torneio.create({
       name,
+      date_start: date_start,
       pass: bcrypt.hashSync(pass, 10),
       usuarioId,
     });
+
+    await Torneio.update(
+      { date_start },
+      {
+        where: {
+          id: torneio.id,
+        },
+      }
+    );
     res.status(201).json({
       status: true,
       msg: "Torneio criado com sucesso",
@@ -38,8 +51,42 @@ exports.createTorneio = async (req, res) => {
 
 exports.getTorneios = async (req, res) => {
   try {
-    const torneios = await Torneio.findAll();
-    res.status(200).json(torneios);
+    const status = req.query.status || "open";
+    const search = req.query.search || "";
+    const torneios = await Torneio.findAll({
+      where: {
+        status,
+        name: {
+          [db.Sequelize.Op.iLike]: `%${search}%`,
+        },
+      },
+      include: [
+        {
+          model: Usuario,
+          as: "usuario",
+          attributes: ["username", "country"],
+        },
+      ],
+    });
+
+    const userSubscribed = await Promise.all(
+      torneios.map(async (torneio) => {
+        const subscribed = await user_toneio.findAll({
+          where: {
+            torneioId: torneio.id,
+          },
+        });
+        return {
+          inscritos: subscribed.length,
+          torneio: torneio,
+        };
+      })
+    );
+    res.status(200).json({
+      status: true,
+      msg: "Todos torneios",
+      data: userSubscribed,
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -269,6 +316,7 @@ exports.subscribed = async (req, res) => {
     res.status(200).json({
       status: true,
       msg: "Todos usuairos inscritos no torneio",
+      quantidade: subscribed.length,
       data: userSubscribed,
     });
   } catch (error) {
@@ -281,7 +329,14 @@ exports.subscribed = async (req, res) => {
 
 exports.select_winner = async (req, res) => {
   try {
-    const { torneioId, username } = req.params;
+    const { torneioId, username, vsId } = req.params;
+
+    if (!torneioId || !username || !vsId) {
+      return res.status(400).json({
+        status: false,
+        msg: "Dados inválidos",
+      });
+    }
     const user = await Usuario.findOne({
       where: { username },
     });
@@ -317,6 +372,12 @@ exports.select_winner = async (req, res) => {
       { pontos: pontosJogador },
       {
         where: { id: jogador.id },
+      }
+    );
+    await vs.update(
+      { winner: username },
+      {
+        where: { id: vsId },
       }
     );
     return res.status(200).json({
@@ -361,4 +422,4 @@ exports.topTorneio = async (req, res) => {
       msg: "Erro ao buscar top 3 jogadores",
     });
   }
-}
+};

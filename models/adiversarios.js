@@ -56,6 +56,16 @@ module.exports = (sequelize) => {
         defaultValue: 'open',
         allowNull: false,
       },
+      winner: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
+      game_status: {
+        type: DataTypes.ENUM('completed', 'current'),
+        defaultValue: 'current',
+        allowNull: false,
+      }
     },
     {
       sequelize,

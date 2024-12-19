@@ -20,9 +20,9 @@ const authorization = (req, res, next) => {
     req.userId = decoded.id;
     next();
   } catch (error) {
-    res.status(400).json({
+    res.status(401).json({
       status: false,
-      msg: error.message,
+      msg: "Token inválido",
     });
   }
 };

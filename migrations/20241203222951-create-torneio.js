@@ -14,6 +14,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      date_start: {
+        type: Sequelize.DATE,
+        allowNull: true,
+      },
       pass: {
         type: Sequelize.STRING,
         allowNull: false,
@@ -28,7 +32,7 @@ module.exports = {
         onDelete: 'CASCADE', // O que acontece ao deletar um usuário
       },
       status: {
-        type: Sequelize.ENUM('open', 'closed'),
+        type: Sequelize.ENUM('open', 'closed', 'current'),
         defaultValue: 'open',
         allowNull: false,
       },

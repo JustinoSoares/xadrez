@@ -36,6 +36,10 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      date_start: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
       usuarioId: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -45,7 +49,7 @@ module.exports = (sequelize) => {
         },
       },
       status: {
-        type: DataTypes.ENUM('open', 'closed'),
+        type: DataTypes.ENUM('open', 'closed', "current"),
         defaultValue: 'open',
         allowNull: false,
       },
