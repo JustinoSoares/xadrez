@@ -2,11 +2,13 @@ const express = require("express");
 const { sequelize } = require("../models/index.js");
 const usuarioRouter = require("./routes/user.router");
 const torneioRouter = require("./routes/torneio.router");
+const cors = require("cors");
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
+// Middleware(
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

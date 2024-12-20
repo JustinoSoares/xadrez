@@ -5,6 +5,7 @@ const db = require("../../models"); // Importa todos os modelos
 const Usuario = db.Usuario; // Acessa o modelo Usuario
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
+const axios = require("axios");
 
 exports.createUsuario = async (req, res) => {
   try {
@@ -12,7 +13,6 @@ exports.createUsuario = async (req, res) => {
     if (!errors.isEmpty()) {
       return res.status(422).json({ errors: errors.array() });
     }
-
     const { username, email, password, country } = req.body;
     const usuarioExistente = await Usuario.findOne({
       where: { email },
@@ -32,6 +32,8 @@ exports.createUsuario = async (req, res) => {
       country: country || "Angola",
     });
 
+
+    //const bandeira = await axios.get(`https://restcountries.com/v3.1/name/${country}?fields=flags`);
     const {
       id: idRes,
       username: usernameRes,
@@ -47,6 +49,7 @@ exports.createUsuario = async (req, res) => {
         username: usernameRes,
         email: emailRes,
         country : country || "Angola",
+        //countryImg: bandeira.data[0].flags.png,
         pontos,
       },
     });
@@ -76,11 +79,10 @@ exports.getUsuarios = async (req, res) => {
         "createdAt",
         "updatedAt",
       ],
-      where: {
-        username: {
-          [Op.like]: `%${search}%`,
-        },
-      },
+      //where: {
+        //[Op.like]: `%${search}%`,
+        //},
+      //},
       order: [[attribute, order]],
       limit: maxLen,
       offset: offset,
@@ -95,11 +97,24 @@ exports.getUsuarios = async (req, res) => {
         msg: "Nenhum usuário encontrado",
       });
     }
-
+    //const bandeira = await axios.get(`https://restcountries.com/v3.1/name/${usuarios.country}`);
+    const data = await Promise.all(usuarios.map((usuario) => {
+      return {
+        id: usuario.id,
+        username: usuario.username,
+        email: usuario.email,
+        country: usuario.country,
+        //countryImg: bandeira.data[0].flags,
+        pontos: usuario.pontos,
+        createdAt: usuario.createdAt,
+        updatedAt: usuario.updatedAt,
+      };
+    }
+    ));
     return res.status(200).json({
       status: true,
       msg: "Usuários encontrados",
-      data: usuarios,
+      data,
     });
   } catch (error) {
     res.status(500).json({
