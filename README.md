@@ -249,8 +249,23 @@ Esta API permite a gestão de torneios e usuários. Abaixo estão os endpoints d
 ```json
 {
   "status": true,
+  "id" : "id",
   "token": "Bearer token"
 }
 ```
 
 ---
+
+### Deletar usuário
+
+**URL:** `/usuarios/delete/:id`  
+**Método:** POST  
+**Descrição:** Realiza login de um usuário.
+
+**Resposta de Sucesso:**
+```json
+{
+  "status": true,
+  "msg": "Usuario deletado com sucesso"
+}
+```

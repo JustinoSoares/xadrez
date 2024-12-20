@@ -29,7 +29,13 @@ exports.login = async (req, res) => {
     if (!usuario) {
       return res.status(400).json({
         status: false,
-        msg: "Usuário ou  senha inválida",
+        errors: [
+          {
+            msg: "Usuário ou  senha inválida",
+            param: "username",
+            location: "body",
+          },
+        ],
       });
     }
 
@@ -38,7 +44,13 @@ exports.login = async (req, res) => {
     if (!senhaValida) {
       return res.status(400).json({
         status: false,
-        msg: "Usuário ou  senha inválida",
+        errors: [
+          {
+            msg: "Usuário ou  senha inválida",
+            param: "username",
+            location: "body",
+          },
+        ],
       });
     }
 
@@ -55,13 +67,19 @@ exports.login = async (req, res) => {
     return res.status(200).json({
       status: true,
       msg: "Login efetuado com sucesso",
-      id : usuario.id,
+      id: usuario.id,
       token,
     });
   } catch (error) {
     res.status(400).json({
       status: false,
-      msg: error.message,
+      errors: [
+        {
+          msg: "Erro ao efetuar o login",
+          param: "username",
+          location: "body",
+        },
+      ],
     });
   }
 };

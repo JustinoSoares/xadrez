@@ -178,3 +178,148 @@ exports.getUsuarios = async (req, res) => {
     });
   }
 };
+
+exports.deleteUsuario = async (req, res) => {
+  try {
+    const usuarioId = req.params.id;
+    const usuario = await Usuario.findByPk(usuarioId);
+    if (!usuario) {
+      return res.status(404).json({
+        status: false,
+        errors: [
+          {
+            msg: "Usuário não encontrado",
+            param: "id",
+            location: "params",
+          },
+        ],
+      });
+    }
+    await usuario.destroy();
+    return res.status(200).json({
+      status: true,
+      msg: "Usuário deletado com sucesso",
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      errors: [
+        {
+          msg: "Erro ao deletar usuário",
+          param: "all",
+          location: "body",
+        },
+      ],
+    });
+  }
+}
+
+exports.getUsuarioById = async (req, res) => {
+  try {
+    const usuarioId = req.params.id;
+    const usuario = await Usuario.findByPk(usuarioId, {
+      attributes: [
+        "id",
+        "username",
+        "email",
+        "pontos",
+        "country",
+        "createdAt",
+        "updatedAt",
+      ],
+    });
+    if (!usuario) {
+      return res.status(404).json({
+        status: false,
+        errors: [
+          {
+            msg: "Usuário não encontrado",
+            param: "id",
+            location: "params",
+          },
+        ],
+      });
+    }
+    const bandeira = await getCountryFlag(usuario.country);
+    return res.status(200).json({
+      status: true,
+      msg: "Usuário encontrado",
+      data: {
+        id: usuario.id,
+        username: usuario.username,
+        email: usuario.email,
+        country: usuario.country,
+        countryImg: bandeira,
+        pontos: usuario.pontos,
+        createdAt: usuario.createdAt,
+        updatedAt: usuario.updatedAt,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      errors: [
+        {
+          msg: "Erro ao buscar usuário",
+          param: "all",
+          location: "body",
+        },
+      ],
+    });
+  }
+};
+
+exports.updateUsuario = async (req, res) => {
+  try {
+    const usuarioId = req.params.id;
+    const usuario = await Usuario.findByPk(usuarioId);
+    if (!usuario) {
+      return res.status(404).json({
+        status: false,
+        errors: [
+          {
+            msg: "Usuário não encontrado",
+            param: "id",
+            location: "params",
+          },
+        ],
+      });
+    }
+    const { username, email, password, country } = req.body;
+    const bandeira = await getCountryFlag(country);
+    if (bandeira == 0) {
+      return res.status(404).json({
+        status: false,
+        errors: [
+          {
+            value: country,
+            msg: "País não encontrado",
+            param: "country",
+            location: "body",
+          },
+        ],
+      });
+    }
+    await usuario.update({
+      username,
+      email,
+      password: bcrypt.hashSync(password, 10),
+      country,
+    });
+    return res.status(200).json({
+      status: true,
+      msg: "Usuário atualizado com sucesso",
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      errors: [
+        {
+          msg: "Erro ao atualizar usuário",
+          param: "all",
+          location: "body",
+        },
+      ],
+    });
+  }
+};
