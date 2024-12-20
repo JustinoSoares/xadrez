@@ -7,6 +7,20 @@ const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const axios = require("axios");
 
+async function getCountryFlag(country) {
+  try {
+    const bandeira = await axios.get(
+      `https://restcountries.com/v3.1/name/${country}`
+    );
+    if (!bandeira.data || bandeira.data.length === 0) {
+      return 0;
+    }
+    return bandeira.data[0].flag;
+  } catch (error) {
+    return 0;
+  }
+}
+
 exports.createUsuario = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -31,9 +45,6 @@ exports.createUsuario = async (req, res) => {
       password: bcrypt.hashSync(password, 10),
       country: country || "Angola",
     });
-
-
-    //const bandeira = await axios.get(`https://restcountries.com/v3.1/name/${country}?fields=flags`);
     const {
       id: idRes,
       username: usernameRes,
@@ -41,6 +52,13 @@ exports.createUsuario = async (req, res) => {
       pontos,
     } = usuario;
 
+    const bandeira = await getCountryFlag(usuario.country);
+    if (bandeira == 0) {
+      return res.status(404).json({
+        status: false,
+        msg: "País não encontrado",
+      });
+    }
     res.status(201).json({
       status: true,
       msg: "Usuário criado com sucesso",
@@ -48,8 +66,8 @@ exports.createUsuario = async (req, res) => {
         id: idRes,
         username: usernameRes,
         email: emailRes,
-        country : country || "Angola",
-        //countryImg: bandeira.data[0].flags.png,
+        country: country || "Angola",
+        countryImg: bandeira,
         pontos,
       },
     });
@@ -67,7 +85,7 @@ exports.getUsuarios = async (req, res) => {
     const order = req.query.order || "ASC";
     const offset = req.query.offset || 0;
     const search = req.query.search || "";
-    const attribute = req.query.attribute || 'id'; 
+    const attribute = req.query.attribute || "id";
 
     const usuarios = await Usuario.findAll({
       attributes: [
@@ -79,10 +97,9 @@ exports.getUsuarios = async (req, res) => {
         "createdAt",
         "updatedAt",
       ],
-      //where: {
-        //[Op.like]: `%${search}%`,
-        //},
-      //},
+      where: {
+        [Op.like]: `%${search}%`,
+      },
       order: [[attribute, order]],
       limit: maxLen,
       offset: offset,
@@ -97,20 +114,22 @@ exports.getUsuarios = async (req, res) => {
         msg: "Nenhum usuário encontrado",
       });
     }
-    //const bandeira = await axios.get(`https://restcountries.com/v3.1/name/${usuarios.country}`);
-    const data = await Promise.all(usuarios.map((usuario) => {
-      return {
-        id: usuario.id,
-        username: usuario.username,
-        email: usuario.email,
-        country: usuario.country,
-        //countryImg: bandeira.data[0].flags,
-        pontos: usuario.pontos,
-        createdAt: usuario.createdAt,
-        updatedAt: usuario.updatedAt,
-      };
-    }
-    ));
+
+    const data = await Promise.all(
+      usuarios.map(async (usuario) => {
+        const bandeira = await getCountryFlag(usuario.country);
+        return {
+          id: usuario.id,
+          username: usuario.username,
+          email: usuario.email,
+          country: usuario.country,
+          countryImg: bandeira,
+          pontos: usuario.pontos,
+          createdAt: usuario.createdAt,
+          updatedAt: usuario.updatedAt,
+        };
+      })
+    );
     return res.status(200).json({
       status: true,
       msg: "Usuários encontrados",
@@ -118,8 +137,8 @@ exports.getUsuarios = async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      status : false, 
-      error: error.message 
+      status: false,
+      error: error.message,
     });
   }
 };
