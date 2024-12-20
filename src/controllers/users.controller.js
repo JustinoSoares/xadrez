@@ -25,7 +25,10 @@ exports.createUsuario = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).json({ errors: errors.array() });
+      return res.status(422).json({
+        status: false,
+        errors: errors.array(),
+      });
     }
     const { username, email, password, country } = req.body;
     const usuarioExistente = await Usuario.findOne({
@@ -35,7 +38,29 @@ exports.createUsuario = async (req, res) => {
     if (usuarioExistente) {
       return res.status(400).json({
         status: false,
-        msg: "Usuário já existe, tenta mudar o username ou email",
+        errors: [
+          {
+            value: email,
+            msg: "Usuário já existe, tenta mudar o username ou email",
+            param: "email ou  username",
+            location: "body",
+          },
+        ],
+      });
+    }
+
+    const bandeira = await getCountryFlag(country);
+    if (bandeira == 0) {
+      return res.status(404).json({
+        status: false,
+        errors: [
+          {
+            value: country,
+            msg: "País não encontrado",
+            param: "country",
+            location: "body",
+          },
+        ],
       });
     }
 
@@ -52,13 +77,6 @@ exports.createUsuario = async (req, res) => {
       pontos,
     } = usuario;
 
-    const bandeira = await getCountryFlag(usuario.country);
-    if (bandeira == 0) {
-      return res.status(404).json({
-        status: false,
-        msg: "País não encontrado",
-      });
-    }
     res.status(201).json({
       status: true,
       msg: "Usuário criado com sucesso",
@@ -74,7 +92,13 @@ exports.createUsuario = async (req, res) => {
   } catch (error) {
     res.status(400).json({
       status: false,
-      msg: error.message,
+      errors: [
+        {
+          msg: "Erro ao criar usuário",
+          param: "all",
+          location: "body",
+        },
+      ],
     });
   }
 };
@@ -111,7 +135,13 @@ exports.getUsuarios = async (req, res) => {
     if (!usuarios || usuarios.length === 0) {
       return res.status(404).json({
         status: false,
-        msg: "Nenhum usuário encontrado",
+        errors: [
+          {
+            msg: "Nenhum usuário encontrado",
+            param: "all",
+            location: "body",
+          },
+        ],
       });
     }
 
@@ -138,7 +168,13 @@ exports.getUsuarios = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: false,
-      error: error.message,
+      errors: [
+        {
+          msg: "Erro ao buscar usuários",
+          param: "all",
+          location: "body",
+        },
+      ],
     });
   }
 };
