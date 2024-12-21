@@ -7,14 +7,26 @@ const user_toneio = db.UsuarioTorneio; // Ajuste o caminho conforme necessário
 const vs = db.Adversarios;
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
+const axios = require("axios");
+
+async function getCountry(country) {
+  try {
+    const response = await axios.get(
+      `https://restcountries.com/v3.1/name/${country}`
+    );
+    return response.data[0].flag;
+  } catch (error) {
+    return 0;
+  }
+}
 
 exports.createTorneio = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(422).json({ 
+      return res.status(422).json({
         status: false,
-        errors: errors.array() 
+        errors: errors.array(),
       });
     }
     const { name, pass, date_start } = req.body;
@@ -190,7 +202,7 @@ exports.AllvsAll = async (req, res) => {
         msg: "Usuário não autorizado",
       });
     }
-    if (!torneio || torneio.status === "closed") {
+    if (!torneio || torneio.status != "open") {
       return res.status(404).json({
         status: false,
         msg: "Torneio encerrado ou não encontrado",
@@ -199,13 +211,14 @@ exports.AllvsAll = async (req, res) => {
     const jogadoresInscritos = await user_toneio.findAll({
       where: {
         torneioId: torneioId,
+        status: "on",
       },
     });
 
     if (jogadoresInscritos.length < 1) {
       return res.status(404).json({
         status: false,
-        msg: "Nenhum jogador inscrito no torneio",
+        msg: "O número de jogadores inscritos é insuficiente",
       });
     }
 
@@ -243,13 +256,115 @@ exports.AllvsAll = async (req, res) => {
       }
     }
     // fechar o torneio depois de gerar as partidas
-    await Torneio.update({ status: "closed" }, { where: { id: torneioId } });
+    await Torneio.update({ status: "current" }, { where: { id: torneioId } });
     return res.status(200).json({
       status: true,
       msg: "Partidas geradas com sucesso",
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({
+      error: [
+        {
+          msg: "Erro ao gerar partidas",
+          param: "torneioId",
+          location: "params",
+        },
+      ],
+    });
+  }
+};
+
+exports.eliminatoria = async (req, res) => {
+  try {
+    const torneioId = req.params.torneioId;
+    const usuarioId = req.userId;
+    const torneio = await Torneio.findByPk(torneioId);
+
+    if (usuarioId !== torneio.usuarioId) {
+      return res.status(403).json({
+        status: false,
+        errors: [
+          {
+            msg: "Usuário não autorizado",
+          },
+        ],
+      });
+    }
+    if (!torneio || torneio.status != "open") {
+      return res.status(404).json({
+        status: false,
+        msg: "Torneio encerrado ou não encontrado",
+      });
+    }
+    const jogadoresInscritos = await user_toneio.findAll({
+      where: {
+        torneioId: torneioId,
+        status: "on",
+      },
+    });
+
+    if (jogadoresInscritos.length < 1) {
+      return res.status(404).json({
+        status: false,
+        msg: "O número de jogadores inscritos é insuficiente",
+      });
+    }
+    for (let i = 0; i < jogadoresInscritos.length; i++) {
+      if (i % 2 === 0) {
+        const partidas = vs.create({
+          jogador1Id: jogadoresInscritos[i].usuarioId,
+          jogador2Id: jogadoresInscritos[i + 1].usuarioId,
+          torneioId: torneioId,
+        });
+      }
+    }
+    const this_partidas = await vs.findAll({
+      where: { torneioId: torneioId },
+    });
+
+    res.status(200).json({
+      status: true,
+      msg: "Partidas geradas com sucesso",
+      data: this_partidas,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      error: error.message,
+    });
+  }
+};
+
+exports.close_torneio = async (req, res) => {
+  try {
+    const torneioId = req.params.torneioId;
+    const usuarioId = req.userId;
+    const torneio = await Torneio.findByPk(torneioId);
+    if (usuarioId !== torneio.usuarioId) {
+      return res.status(403).json({
+        status: false,
+        msg: "Usuário não autorizado",
+      });
+    }
+    if (!torneio) {
+      return res.status(404).json({
+        status: false,
+        msg: "Torneio não encontrado",
+      });
+    }
+    await Torneio.update(
+      { status: "closed" },
+      {
+        where: {
+          id: torneioId,
+        },
+      }
+    );
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      error: error.message,
+    });
   }
 };
 
@@ -302,8 +417,10 @@ exports.subscribed = async (req, res) => {
     const userSubscribed = await Promise.all(
       subscribed.map(async (sub) => {
         const user = await Usuario.findByPk(sub.usuarioId);
+        const bandeira = await getCountry(user.country);
         return {
           username: user.username,
+          countryImg: bandeira,
         };
       })
     );
@@ -330,6 +447,8 @@ exports.subscribed = async (req, res) => {
 exports.select_winner = async (req, res) => {
   try {
     const { torneioId, username, vsId } = req.params;
+    // eliminatoria ou allvsall
+    const type = req.query.type || "allvsall";
 
     if (!torneioId || !username || !vsId) {
       return res.status(400).json({
@@ -380,6 +499,37 @@ exports.select_winner = async (req, res) => {
         where: { id: vsId },
       }
     );
+    if (type === "eliminatoria") {
+      const partida = await vs.findByPk(vsId);
+
+      if (partida.jogador1Id != user.id) {
+        const new_torneio = await Torneio.findByPk(torneioId);
+        await UsuarioTorneio.update(
+          {
+            status: "off",
+          },
+          {
+            where: {
+              torneioId,
+              jogador1Id: partida.jogador1Id,
+            },
+          }
+        );
+      } else if (partida.jogador2Id != user.id) {
+        const new_torneio = await Torneio.findByPk(torneioId);
+        await UsuarioTorneio.update(
+          {
+            status: "off",
+          },
+          {
+            where: {
+              torneioId,
+              jogador2Id: partida.jogador2Id,
+            },
+          }
+        );
+      }
+    }
     return res.status(200).json({
       status: true,
       msg: "Vencedor atualizado com sucesso",

@@ -94,6 +94,24 @@ Esta API permite a gestão de torneios e usuários. Abaixo estão os endpoints d
 
 ---
 
+### Gerar Partidas (Eliminatória)
+
+**URL:** `/torneios/eliminatoria/:torneioId`  
+**Método:** POST  
+**Descrição:** Gera partidas para um torneio no modo "eliminatoria".  
+**Headers:**
+- Authorization: Bearer `token`
+
+**Resposta de Sucesso:**
+```json
+{
+  "status": true,
+  "msg": "Partidas geradas com sucesso"
+}
+```
+
+---
+
 ### Listar Partidas de um Torneio
 
 **URL:** `/torneios/partida/:torneioId`  
@@ -124,7 +142,10 @@ Esta API permite a gestão de torneios e usuários. Abaixo estão os endpoints d
 {
   "status": true,
   "msg": "Jogadores inscritos",
-  "data": [ "User1", "User2", ... ]
+  "data": [ {
+    "username" : "jsoares",
+    "countryImg": "bandeira",
+  } ]
 }
 ```
 
@@ -136,6 +157,9 @@ Esta API permite a gestão de torneios e usuários. Abaixo estão os endpoints d
 **Método:** POST  
 **Descrição:** Seleciona o vencedor de uma partida no torneio.
 
+**Query Params (opcionais):**
+- `type`: tipo de torneio (default: `allvsall`).
+- se colocares eliminatória, ele apenas elimina
 **Resposta de Sucesso:**
 ```json
 {
@@ -222,6 +246,7 @@ Esta API permite a gestão de torneios e usuários. Abaixo estão os endpoints d
       "email": "user1@exemplo.com",
       "pontos": 100,
       "country": "Angola",
+      "countryImg": "🇦",
       "createdAt": "2024-01-01T00:00:00.000Z",
       "updatedAt": "2024-01-02T00:00:00.000Z"
     },
@@ -256,10 +281,37 @@ Esta API permite a gestão de torneios e usuários. Abaixo estão os endpoints d
 
 ---
 
+### Pegar cada usuário pelo ID
+
+**URL:** `/usuarios/each/:id`  
+**Método:** GET
+**Descrição:** Retorna o usuário específico.
+
+**Resposta de Sucesso:**
+```json
+{
+  "status": true,
+  "msg": "Usuários encontrados",
+  "data": [
+    {
+      "id": 1,
+      "username": "User1",
+      "email": "user1@exemplo.com",
+      "pontos": 100,
+      "country": "Angola",
+      "countryImg": "🇦",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-02T00:00:00.000Z"
+    },
+    ...
+  ]
+}
+```
+
 ### Deletar usuário
 
-**URL:** `/usuarios/delete/:id`  
-**Método:** POST  
+**URL:** `/usuarios/delete/:id`
+**Método:** DELETE
 **Descrição:** Realiza login de um usuário.
 
 **Resposta de Sucesso:**
