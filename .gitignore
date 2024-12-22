@@ -1,7 +1,2 @@
 .vercel
-<<<<<<< HEAD
 .env
-=======
-.env
-.env
->>>>>>> 5f15cc2 (Add .env to .gitignore)
