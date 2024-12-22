@@ -68,6 +68,7 @@ exports.login = async (req, res) => {
       status: true,
       msg: "Login efetuado com sucesso",
       id: usuario.id,
+      username: usuario.username,
       token,
     });
   } catch (error) {
