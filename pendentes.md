@@ -4,4 +4,3 @@
 
 -O que devo instalar a autenticação o auth 2.0
 `npm install passport passport-google-oauth20 express-session`
-
