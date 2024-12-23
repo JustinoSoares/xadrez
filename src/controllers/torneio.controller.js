@@ -76,21 +76,33 @@ exports.getTorneios = async (req, res) => {
         {
           model: Usuario,
           as: "usuario",
-          attributes: ["username", "country"],
+          attributes: ["id","username", "country"],
         },
       ],
     });
 
     const userSubscribed = await Promise.all(
       torneios.map(async (torneio) => {
+        const bandeira = await getCountry(torneio.usuario.country);
         const subscribed = await user_toneio.findAll({
           where: {
             torneioId: torneio.id,
           },
         });
+        torneio.usuario.country = bandeira;
         return {
           inscritos: subscribed.length,
-          torneio: torneio,
+          torneio: {
+            id: torneio.id,
+            name: torneio.name,
+            date_start: torneio.date_start,
+            status: torneio.status,
+            usuario: {
+              usuarioId: torneio.usuario.id,
+              username : torneio.usuario.username,
+              countryImg: bandeira,
+            },
+          },
         };
       })
     );
@@ -427,7 +439,7 @@ exports.subscribed = async (req, res) => {
     if (subscribed.length < 1) {
       return res.status(404).json({
         status: false,
-        msg: "Nem um torneio encontrado",
+        msg: "Nem um usuário inscritos no torneio",
       });
     }
     res.status(200).json({
