@@ -34,5 +34,8 @@ router.get('/torneios/top/:torneioId', torneioController.topTorneio);
 //fechar um torneio
 router.post("/torneios/close_torneio/:torneioId", authorization, torneioController.close_torneio);
 
+// desabilitar um usuário de um torneio
+router.delete("/torneios/disable_user/:torneioId/:userId", authorization, torneioController.describeUser);
+
 
 module.exports = router;

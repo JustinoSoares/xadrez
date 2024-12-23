@@ -90,12 +90,19 @@ exports.getTorneios = async (req, res) => {
           },
         });
         torneio.usuario.country = bandeira;
+        let type = torneio.type;
+        if (type === "allvsall") {
+          type = "Todos vs Todos";
+        }
+        else
+          type = "Eliminatória";
         return {
           inscritos: subscribed.length,
           torneio: {
             id: torneio.id,
             name: torneio.name,
             date_start: torneio.date_start,
+            type: type,
             status: torneio.status,
             is_subscribed: active ? true : false,
             usuario: {
@@ -606,3 +613,67 @@ exports.topTorneio = async (req, res) => {
     });
   }
 };
+
+exports.describeUser = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const userTargetId = req.params.userId;
+    const torneioId = req.params.torneioId;
+    const userAuth = await Usuario.findByPk(userId);
+    
+    const userTarget = await Usuario.findByPk(userTargetId);
+    const torneioTarget = await Torneio.findByPk(torneioId);
+    if (!userTarget || !torneioTarget) {
+      return res.status(404).json({
+        status: false,
+        msg: "Dados inválidos",
+      });
+    }
+
+    const torneio = await Torneio.findByPk(torneioId);
+    if (!torneio) {
+      return res.status(404).json({
+        status: false,
+        msg: "Torneio não encontrado",
+      });
+    }
+   
+    if (userAuth.id !== torneio.usuarioId) {
+      return res.status(403).json({
+        status: false,
+        msg: "Usuário não autorizado",
+      });
+    }
+    findGamer = await user_toneio.findOne({
+      where: {
+        usuarioId: userTargetId,
+        torneioId,
+      },
+    });
+    if (!findGamer) {
+      return res.status(404).json({
+        status: false,
+        msg: "Usuário não está inscrito inscrito no torneio",
+      });
+    }
+    await user_toneio.destroy(
+      {
+        where: {
+          usuarioId: userTargetId,
+          torneioId,
+        },
+      }
+    );
+    return res.status(200).json({
+      status: true,
+      msg: "Usuário desclassificado com sucesso",
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      mm: error.message,
+      msg: "Erro ao tentar desclassificar usuário",
+    });
+  }
+  
+}
