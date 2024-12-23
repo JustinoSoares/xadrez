@@ -644,7 +644,7 @@ exports.describeUser = async (req, res) => {
         msg: "Usuário não autorizado",
       });
     }
-    findGamer = await user_toneio.findOne({
+    const findGamer = await user_toneio.findOne({
       where: {
         usuarioId: userTargetId,
         torneioId,
@@ -671,7 +671,6 @@ exports.describeUser = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: false,
-      mm: error.message,
       msg: "Erro ao tentar desclassificar usuário",
     });
   }
