@@ -29,24 +29,17 @@ exports.createTorneio = async (req, res) => {
         errors: errors.array(),
       });
     }
-    const { name, pass, date_start } = req.body;
+    const { name, pass, date_start, type } = req.body;
     const usuarioId = req.userId;
 
     const torneio = await Torneio.create({
       name,
       date_start: date_start,
+      type,
       pass: bcrypt.hashSync(pass, 10),
       usuarioId,
     });
 
-    await Torneio.update(
-      { date_start },
-      {
-        where: {
-          id: torneio.id,
-        },
-      }
-    );
     res.status(201).json({
       status: true,
       msg: "Torneio criado com sucesso",
@@ -76,7 +69,7 @@ exports.getTorneios = async (req, res) => {
         {
           model: Usuario,
           as: "usuario",
-          attributes: ["id","username", "country"],
+          attributes: ["id", "username", "country"],
         },
       ],
     });
@@ -99,7 +92,7 @@ exports.getTorneios = async (req, res) => {
             status: torneio.status,
             usuario: {
               usuarioId: torneio.usuario.id,
-              username : torneio.usuario.username,
+              username: torneio.usuario.username,
               countryImg: bandeira,
             },
           },
@@ -208,6 +201,12 @@ exports.AllvsAll = async (req, res) => {
     const usuarioId = req.userId;
     const torneio = await Torneio.findByPk(torneioId);
 
+    if (torneio.type !== "allvsall") {
+      return res.status(400).json({
+        status: false,
+        msg: "Tipo de torneio inválido, tente outro tipo",
+      });
+    }
     if (usuarioId !== torneio.usuarioId) {
       return res.status(403).json({
         status: false,
@@ -291,6 +290,13 @@ exports.eliminatoria = async (req, res) => {
     const torneioId = req.params.torneioId;
     const usuarioId = req.userId;
     const torneio = await Torneio.findByPk(torneioId);
+
+    if (torneio.type !== "eliminatoria") {
+      return res.status(400).json({
+        status: false,
+        msg: "Tipo de torneio inválido, tente outro tipo",
+      });
+    }
 
     if (usuarioId !== torneio.usuarioId) {
       return res.status(403).json({
@@ -392,8 +398,15 @@ exports.partida = async (req, res) => {
         const jogador1 = await Usuario.findByPk(partida.jogador1Id);
         const jogador2 = await Usuario.findByPk(partida.jogador2Id);
         return {
-          jogador1: jogador1.username,
-          jogador2: jogador2.username,
+          winner : partida.winner || "0", 
+          jogador1: {
+            username: jogador1.username,
+            countryImg: await getCountry(jogador1.country),
+          },
+          jogador2: {
+            username: jogador2.username,
+            countryImg: await getCountry(jogador2.country),
+          },
         };
       })
     );

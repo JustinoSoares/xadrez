@@ -53,6 +53,11 @@ module.exports = (sequelize) => {
         defaultValue: 'open',
         allowNull: false,
       },
+      type: {
+        type: DataTypes.ENUM('allvsall', 'eliminatoria'),
+        defaultValue: 'allvsall',
+        allowNull: false,
+      },
     },
     {
       sequelize,

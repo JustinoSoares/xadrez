@@ -61,11 +61,6 @@ module.exports = (sequelize) => {
         allowNull: true,
         defaultValue: null,
       },
-      game_status: {
-        type: DataTypes.ENUM('completed', 'current'),
-        defaultValue: 'current',
-        allowNull: false,
-      }
     },
     {
       sequelize,

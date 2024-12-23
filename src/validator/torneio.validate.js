@@ -3,6 +3,7 @@ const { body } = require("express-validator");
 const create = [
   body("name").notEmpty().withMessage("O name é Obrigatório."),
   body("pass").notEmpty().withMessage("A pass é obrigatória."),
+  body("type").notEmpty().withMessage("O tipo é obrigatório."),
   body("date_start")
     .notEmpty()
     .withMessage("A data de início é obrigatória.")

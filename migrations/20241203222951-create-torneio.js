@@ -1,11 +1,10 @@
-// migrations/XXXXXX-create-torneio.js
-
 'use strict';
-
+/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
+  async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Torneios', {
       id: {
+        allowNull: false,
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
@@ -14,26 +13,30 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      date_start: {
-        type: Sequelize.DATE,
-        allowNull: true,
-      },
       pass: {
         type: Sequelize.STRING,
         allowNull: false,
+      },
+      date_start: {
+        type: Sequelize.DATE,
+        allowNull: true,
       },
       usuarioId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
-          model: 'Usuarios', // Nome da tabela referenciada
-          key: 'id', // Chave primária na tabela referenciada
+          model: 'Usuarios', // Tabela de usuários
+          key: 'id', // Chave primária da tabela de usuários
         },
-        onDelete: 'CASCADE', // O que acontece ao deletar um usuário
       },
       status: {
         type: Sequelize.ENUM('open', 'closed', 'current'),
         defaultValue: 'open',
+        allowNull: false,
+      },
+      type: {
+        type: Sequelize.ENUM('allvsall', 'eliminatoria'),
+        defaultValue: 'allvsall',
         allowNull: false,
       },
       createdAt: {
@@ -47,7 +50,10 @@ module.exports = {
     });
   },
 
-  down: async (queryInterface) => {
+  async down(queryInterface, Sequelize) {
+    // Remover a tabela e os tipos ENUM
     await queryInterface.dropTable('Torneios');
-  }
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_Torneios_status";');
+    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_Torneios_tipo";');
+  },
 };
