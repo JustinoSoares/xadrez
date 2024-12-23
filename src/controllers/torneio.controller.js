@@ -58,6 +58,7 @@ exports.getTorneios = async (req, res) => {
   try {
     const status = req.query.status || "open";
     const search = req.query.search || "";
+    const userId = req.userId;
     const torneios = await Torneio.findAll({
       where: {
         status,
@@ -77,6 +78,12 @@ exports.getTorneios = async (req, res) => {
     const userSubscribed = await Promise.all(
       torneios.map(async (torneio) => {
         const bandeira = await getCountry(torneio.usuario.country);
+        const active = await user_toneio.findOne({
+          where: {
+            usuarioId: userId,
+            torneioId: torneio.id,
+          },
+        });
         const subscribed = await user_toneio.findAll({
           where: {
             torneioId: torneio.id,
@@ -90,6 +97,7 @@ exports.getTorneios = async (req, res) => {
             name: torneio.name,
             date_start: torneio.date_start,
             status: torneio.status,
+            is_subscribed: active ? true : false,
             usuario: {
               usuarioId: torneio.usuario.id,
               username: torneio.usuario.username,
