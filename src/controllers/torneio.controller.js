@@ -157,15 +157,9 @@ exports.subcribeTorneio = async (req, res) => {
       },
     });
     if (AllSubscribed.length > 0) {
-      await user_toneio.destroy({
-        where: {
-          usuarioId,
-          torneioId,
-        },
-      });
       return res.status(200).json({
         status: true,
-        msg: "Usuário saio do torneio",
+        msg: "Este usuário já está inscrito neste torneio",
       });
     }
     if (usuarioId === torneio.usuarioId) {
@@ -675,4 +669,54 @@ exports.describeUser = async (req, res) => {
     });
   }
   
+}
+
+exports.outTorneio = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const torneioId = req.params.torneioId;
+    const user = await Usuario.findByPk(userId);
+    const torneio = await Torneio.findByPk(torneioId);
+    if (!user || !torneio) {
+      return res.status(404).json({
+        status: false,
+        msg: "Dados inválidos",
+      });
+    }
+    const findGamer = await user_toneio.findOne({
+      where: {
+        usuarioId: userId,
+        torneioId,
+      },
+    });
+    if (!findGamer) {
+      return res.status(404).json({
+        status: false,
+        msg: "Usuário não está inscrito inscrito no torneio",
+      });
+    }
+    if (userId !== user.id) {
+      return res.status(403).json({
+        status: false,
+        msg: "Usuário não autorizado",
+      });
+    }
+    await user_toneio.destroy(
+      {
+        where: {
+          usuarioId: userId,
+          torneioId,
+        },
+      }
+    );
+    return res.status(200).json({
+      status: true,
+      msg: "Este usuário saio desse torneio",
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      msg: "Erro ao tentar desclassificar usuário",
+    });
+  }
 }

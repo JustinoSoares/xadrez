@@ -37,5 +37,7 @@ router.post("/torneios/close_torneio/:torneioId", authorization, torneioControll
 // desabilitar um usuário de um torneio
 router.delete("/torneios/disable_user/:torneioId/:userId", authorization, torneioController.describeUser);
 
+router.delete("/torneios/out_torneio/:torneioId", authorization, torneioController.outTorneio);
+
 
 module.exports = router;
