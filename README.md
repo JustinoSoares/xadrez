@@ -275,11 +275,31 @@ Esta API permite a gestão de torneios e usuários. Abaixo estão os endpoints d
 {
   "status": true,
   "id" : "id",
+  "username" : "username" 
   "token": "Bearer token"
 }
 ```
 
 ---
+
+### Login com o google
+
+**URL:** `/auth/google`  
+**Método:** GET
+**Descrição:** Realiza login de um usuário com o google.
+
+**Resposta de Sucesso:**
+```json
+{
+  "status": true,
+  "id" : "id",
+  "username" : "username" 
+  "token": "Bearer token"
+}
+```
+
+---
+
 
 ### Pegar cada usuário pelo ID
 
