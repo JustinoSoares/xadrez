@@ -77,26 +77,27 @@ exports.createUsuario = async (req, res) => {
       pontos,
     } = usuario;
 
-    res.status(201).json({
+    const data = {
+      id: idRes,
+      username: usernameRes,
+      email: emailRes,
+      country: country || "Angola",
+      countryImg: bandeira,
+      pontos,
+    }
+    const io = req.app.get('socketio');
+    io.emit("create_user", data); //emitindo evento 
+    return res.status(201).json({
       status: true,
       msg: "Usuário criado com sucesso",
-      data: {
-        id: idRes,
-        username: usernameRes,
-        email: emailRes,
-        country: country || "Angola",
-        countryImg: bandeira,
-        pontos,
-      },
+      data,
     });
   } catch (error) {
     res.status(400).json({
       status: false,
       errors: [
         {
-          msg: "Erro ao criar usuário",
-          param: "all",
-          location: "body",
+          msg: error.message,
         },
       ],
     });
@@ -160,6 +161,7 @@ exports.getUsuarios = async (req, res) => {
         };
       })
     );
+    req.io.emit("listar_usuarios", data);
     return res.status(200).json({
       status: true,
       msg: "Usuários encontrados",
