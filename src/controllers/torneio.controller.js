@@ -95,15 +95,17 @@ exports.getTorneioById = async (req, res) => {
     const user = await Usuario.findByPk(torneio.usuarioId);
     const bandeira = await getCountry(user.country);
     const data = {
-      id: torneio.id,
-      name: torneio.name,
-      date_start: torneio.date_start,
-      type: torneio.type,
-      status: torneio.status,
-      usuario: {
-        usuarioId: user.id,
-        username: user.username,
-        countryImg: bandeira,
+      torneio: {
+        id: torneio.id,
+        name: torneio.name,
+        date_start: torneio.date_start,
+        type: torneio.type,
+        status: torneio.status,
+        usuario: {
+          usuarioId: user.id,
+          username: user.username,
+          countryImg: bandeira,
+        },
       },
     };
     res.status(200).json({
@@ -879,6 +881,30 @@ exports.describeUser = async (req, res) => {
         torneioId,
       },
     });
+
+    const usuario = Usuario.findByPk(userTargetId);
+    const subscribed = await user_toneio.findAll({
+      where: {
+        torneioId: torneio.id,
+      },
+    });
+    const data = {
+      inscritos: subscribed.length,
+      tornnio: {
+        id: torneio.id,
+        name: torneio.name,
+        date_start: torneio.date_start,
+        type: torneio.type,
+        status: torneio.status,
+        usuario: {
+          usuarioId: usuario.id,
+          usurname: usuario.username,
+          countryImg: await getCountry(usuario.country),
+        },
+      },
+    };
+    const io = req.app.get("socketio");
+    io.emit("cancelar_participacao", data);
     return res.status(200).json({
       status: true,
       msg: "Usuário desclassificado com sucesso",
@@ -927,6 +953,29 @@ exports.outTorneio = async (req, res) => {
         torneioId,
       },
     });
+    const usuario = Usuario.findByPk(userId);
+    const subscribed = await user_toneio.findAll({
+      where: {
+        torneioId: torneio.id,
+      },
+    });
+    const data = {
+      inscritos: subscribed.length,
+      tornnio: {
+        id: torneio.id,
+        name: torneio.name,
+        date_start: torneio.date_start,
+        type: torneio.type,
+        status: torneio.status,
+        usuario: {
+          usuarioId: usuario.id,
+          usurname: usuario.username,
+          countryImg: await getCountry(usuario.country),
+        },
+      },
+    };
+    const io = req.app.get("socketio");
+    io.emit("cancelar_participacao", data);
     return res.status(200).json({
       status: true,
       msg: "Este usuário saio desse torneio",
