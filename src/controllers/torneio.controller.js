@@ -262,17 +262,32 @@ exports.subcribeTorneio = async (req, res) => {
     });
     const bandeira = await getCountry(new_subscribed.country);
 
+    const subscribed = await user_toneio.findAll({
+      where: {
+        torneioId: torneio.id,
+      },
+    });
+    const active = await user_toneio.findOne({
+      where: {
+        usuarioId: userId,
+        torneioId: torneio.id,
+      },
+    });
+
     const data = {
-      id: torneio.id,
-      name: torneio.name,
-      date_start: torneio.date_start,
-      type: torneio.type,
-      status: torneio.status,
-      is_subscribed: false,
-      usuario: {
-        id: new_subscribed.id,
-        username: new_subscribed.username,
-        countryImg: bandeira,
+      inscritos: subscribed.length,
+      torneio: {
+        id: torneio.id,
+        name: torneio.name,
+        date_start: torneio.date_start,
+        type: torneio.type,
+        status: torneio.status,
+        is_subscribed: active ? true : false,
+        usuario: {
+          usuarioId: new_subscribed.id,
+          username: new_subscribed.username,
+          countryImg: bandeira,
+        },
       },
     };
     const io = req.app.get("socketio");

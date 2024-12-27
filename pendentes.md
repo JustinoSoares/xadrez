@@ -8,3 +8,8 @@
 - ranking em tempo real
 
 - devo filtar todos os rankings que ele teve em cada torneio
+
+
+## Oq devo fazer agora
+
+- atualizar os subscribed e o número de participantes
