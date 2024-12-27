@@ -44,11 +44,20 @@ exports.createTorneio = async (req, res) => {
       usuarioId,
     });
 
+    const user  = await Usuario.findByPk(usuarioId);
+
     const data = {
+      id : torneio.id,
       name: torneio.name,
       date_start: torneio.date_start,
       type: torneio.type,
-      usuarioId: torneio.usuarioId,
+      status : torneio.status,
+      is_subscribed : false,
+      usuario : {
+        id: torneio.usuarioId,
+        username: user.username,
+        countryImg: await getCountry(user.country),
+      }
     };
 
     io.emit("novo_torneio", data);
@@ -213,12 +222,20 @@ exports.subcribeTorneio = async (req, res) => {
       where: { id: usuarioId },
       attributes: ["id", "username", "country"],
     });
-    const bandeira = await getCountry(country);
+    const bandeira = await getCountry(new_subscribed.country);
 
-    data = {
-      id: new_subscribed,
-      username: new_subscribed.username,
-      countryImg: bandeira,
+    const data = {
+      id: torneio.id,
+      name: torneio.name,
+      date_start: torneio.date_start,
+      type: type,
+      status: torneio.status,
+      is_subscribed : false,
+      usuario: {
+        id: new_subscribed.id,
+        username: new_subscribed.username,
+        countryImg: bandeira,
+      },
     };
     const io = req.app.get("socketio");
     io.emit("new_subscribed", data);

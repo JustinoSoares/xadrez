@@ -348,7 +348,5 @@ Esta API permite a gestão de torneios e usuários. Abaixo estão os endpoints d
 
 Aqui eu irei mostra cada id de cada evento emitido pelo socket io
 
-- Ao criar um novo torneio
-<b>`novo_torneio` </b> ela trás consigo os dados do torneio `name`, `date_start`, `type`, `usuarioId`.
-
-- 
+- `novo_torneio` // quando se cria um novo torneio
+- ``

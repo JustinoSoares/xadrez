@@ -9,6 +9,7 @@ const router = Router();
 
 //criar torneios
 router.post('/torneios/create', authorization, validateTorneio.create, torneioController.createTorneio);
+
 //mostar todos os torneios
 router.get('/torneios/all', authorization, torneioController.getTorneios);
 
