@@ -44,20 +44,27 @@ exports.createTorneio = async (req, res) => {
       usuarioId,
     });
 
-    const user  = await Usuario.findByPk(usuarioId);
-
+    const user = await Usuario.findByPk(usuarioId);
+    const subscribed = await user_toneio.findAll({
+      where: {
+        torneioId: torneio.id,
+      },
+    });
     const data = {
-      id : torneio.id,
-      name: torneio.name,
-      date_start: torneio.date_start,
-      type: torneio.type,
-      status : torneio.status,
-      is_subscribed : false,
-      usuario : {
-        id: torneio.usuarioId,
-        username: user.username,
-        countryImg: await getCountry(user.country),
-      }
+      torneio: {
+        inscritos: subscribed.length,
+        id: torneio.id,
+        name: torneio.name,
+        date_start: torneio.date_start,
+        type: torneio.type,
+        status: torneio.status,
+        is_subscribed: false,
+        usuario: {
+          usuarioId: torneio.usuarioId,
+          username: user.username,
+          countryImg: await getCountry(user.country),
+        },
+      },
     };
 
     io.emit("novo_torneio", data);
@@ -230,7 +237,7 @@ exports.subcribeTorneio = async (req, res) => {
       date_start: torneio.date_start,
       type: type,
       status: torneio.status,
-      is_subscribed : false,
+      is_subscribed: false,
       usuario: {
         id: new_subscribed.id,
         username: new_subscribed.username,
