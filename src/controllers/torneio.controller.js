@@ -238,12 +238,6 @@ exports.subcribeTorneio = async (req, res) => {
         msg: "Usuário não pode se inscrever no próprio torneio",
       });
     }
-    if (!pass) {
-      return res.status(400).json({
-        status: false,
-        msg: "Senha do torneio é obrigatória",
-      });
-    }
     const match = await bcrypt.compare(pass, torneio.pass);
     if (!match) {
       return res.status(400).json({
@@ -272,7 +266,7 @@ exports.subcribeTorneio = async (req, res) => {
       id: torneio.id,
       name: torneio.name,
       date_start: torneio.date_start,
-      type: type,
+      type: torneio.type,
       status: torneio.status,
       is_subscribed: false,
       usuario: {
