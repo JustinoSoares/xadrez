@@ -4,12 +4,15 @@ const { Router } = require('express');
 const torneioController = require('../controllers/torneio.controller');
 const validateTorneio = require('../validator/torneio.validate');
 const authorization = require('../middleware/authorization');
+const { route } = require('./user.router');
 
 const router = Router();
 
 //criar torneios
 router.post('/torneios/create', authorization, validateTorneio.create, torneioController.createTorneio);
 
+//pegar cada torneio
+router.get('/torneios/each/:torneioId', torneioController.getTorneioById);
 //mostar todos os torneios
 router.get('/torneios/all', authorization, torneioController.getTorneios);
 

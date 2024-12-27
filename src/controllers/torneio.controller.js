@@ -82,6 +82,43 @@ exports.createTorneio = async (req, res) => {
   }
 };
 
+exports.getTorneioById = async (req, res) => {
+  try {
+    const torneioId = req.params.torneioId;
+    const torneio = await Torneio.findByPk(torneioId);
+    if (!torneio) {
+      return res.status(404).json({
+        status: false,
+        msg: "Torneio não encontrado",
+      });
+    }
+    const user = await Usuario.findByPk(torneio.usuarioId);
+    const bandeira = await getCountry(user.country);
+    const data = {
+      id: torneio.id,
+      name: torneio.name,
+      date_start: torneio.date_start,
+      type: torneio.type,
+      status: torneio.status,
+      usuario: {
+        usuarioId: user.id,
+        username: user.username,
+        countryImg: bandeira,
+      },
+    };
+    res.status(200).json({
+      status: true,
+      msg: "Torneio encontrado",
+      data,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      msg: "Erro ao buscar torneio",
+    });
+  }
+};
+
 exports.getTorneios = async (req, res) => {
   try {
     const status = req.query.status || "open";
