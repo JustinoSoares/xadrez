@@ -8,6 +8,7 @@ const vs = db.Adversarios;
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const axios = require("axios");
+const aux = require("./aux.controller");
 const { where } = require("sequelize");
 
 async function getCountry(country) {
@@ -33,6 +34,8 @@ exports.createTorneio = async (req, res) => {
     const { name, pass, date_start, type } = req.body;
     const usuarioId = req.userId;
 
+    const io = req.app.get("socketio");
+
     const torneio = await Torneio.create({
       name,
       date_start: date_start,
@@ -41,10 +44,18 @@ exports.createTorneio = async (req, res) => {
       usuarioId,
     });
 
+    const data = {
+      name: torneio.name,
+      date_start: torneio.date_start,
+      type: torneio.type,
+      usuarioId: torneio.usuarioId,
+    };
+
+    io.emit("novo_torneio", data);
     res.status(201).json({
       status: true,
       msg: "Torneio criado com sucesso",
-      data: torneio,
+      data,
     });
   } catch (error) {
     res.status(400).json({
@@ -60,6 +71,10 @@ exports.getTorneios = async (req, res) => {
     const status = req.query.status || "open";
     const search = req.query.search || "";
     const userId = req.userId;
+    const maxLen = req.query.maxLen || 10;
+    const offset = req.query.offset || 0;
+    const order = req.query.order || "DESC";
+    const attribute = req.query.attribute || "createdAt";
     const torneios = await Torneio.findAll({
       where: {
         status,
@@ -67,6 +82,9 @@ exports.getTorneios = async (req, res) => {
           [db.Sequelize.Op.iLike]: `%${search}%`,
         },
       },
+      limit: maxLen,
+      offset: offset,
+      order: [[attribute, order]],
       include: [
         {
           model: Usuario,
@@ -202,8 +220,8 @@ exports.subcribeTorneio = async (req, res) => {
       username: new_subscribed.username,
       countryImg: bandeira,
     };
-    const io = req.app.get("socketio", data);
-    io.emit("new_subscribed", io);
+    const io = req.app.get("socketio");
+    io.emit("new_subscribed", data);
     res.status(200).json({
       status: true,
       msg: "Inscrição realizada com sucesso",
@@ -624,7 +642,7 @@ exports.select_winner = async (req, res) => {
         );
       }
     }
-   
+
     // find o confronto
     const vencedor = await vs.findOne({
       id: vsId,
@@ -635,7 +653,7 @@ exports.select_winner = async (req, res) => {
         const jogador1 = await Usuario.findByPk(partida.jogador1Id);
         const jogador2 = await Usuario.findByPk(partida.jogador2Id);
         return {
-          winner : partida.winner || "0", 
+          winner: partida.winner || "0",
           jogador1: {
             username: jogador1.username,
             countryImg: await getCountry(jogador1.country),
@@ -648,9 +666,52 @@ exports.select_winner = async (req, res) => {
       })
     );
 
+    // Verificar o top de usuários dentro de um torneio
+    const top = await user_toneio.findAll({
+      where: {
+        torneioId,
+      },
+      order: [["pontos", "DESC"]],
+      limit: 3,
+    });
+    const topUsers = await Promise.all(
+      top.map(async (user) => {
+        const usuario = await Usuario.findByPk(user.usuarioId);
+        return {
+          username: usuario.username,
+          countryImg: await getCountry(user.country),
+          pontos: user.pontos,
+        };
+      })
+    );
+
+    // Verificar o top de usuários dentro de um torneio
+    const ranking_torneio = await user_toneio.findAll({
+      where: {
+        torneioId,
+      },
+      order: [["pontos", "DESC"]],
+    });
+    const ranking_data = await Promise.all(
+      ranking_torneio.map(async (user) => {
+        const usuario = await Usuario.findByPk(user.usuarioId);
+        return {
+          username: usuario.username,
+          countryImg: await getCountry(user.country),
+          pontos: user.pontos,
+        };
+      })
+    );
+
+    // ranking individual do usuário
+    const filteredRanking = await aux.ft_ranking(user.id, res, req);
+
     // obter a instancia do socket.io
     const io = req.app.get("socketio");
     io.emit("select_winner", PartidasUser);
+    io.emit("top_users", topUsers);
+    io.emit("ranking_individual", filteredRanking);
+    io.emit("ranking_torneio", ranking_data);
     return res.status(200).json({
       status: true,
       msg: "Vencedor atualizado com sucesso",
@@ -658,9 +719,11 @@ exports.select_winner = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: false,
-      error: [{
-        msg : 'Erro ao selecionar o vencedor'
-      }],
+      error: [
+        {
+          msg: "Erro ao selecionar o vencedor",
+        },
+      ],
     });
   }
 };
@@ -680,11 +743,12 @@ exports.topTorneio = async (req, res) => {
         const usuario = await Usuario.findByPk(user.usuarioId);
         return {
           username: usuario.username,
+          countryImg: await getCountry(user.country),
           pontos: user.pontos,
         };
       })
     );
-    res.status(200).json({
+    return res.status(200).json({
       status: true,
       msg: "Top 3 jogadores do torneio",
       data: topUsers,
@@ -801,6 +865,25 @@ exports.outTorneio = async (req, res) => {
     res.status(500).json({
       status: false,
       msg: "Erro ao tentar desclassificar usuário",
+    });
+  }
+};
+
+exports.rankings = async (req, res) => {
+  try {
+    const usuarioId = req.params.usuarioId;
+    const filteredRanking = await aux.ft_ranking(usuarioId, res, req);
+    return res.status(200).json({
+      status: true,
+      msg: "Ranking do usuário",
+      data: filteredRanking,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      status: false,
+      msg: "Erro ao buscar ranking do usuário",
+      error: error.message,
     });
   }
 };

@@ -37,7 +37,11 @@ router.post("/torneios/close_torneio/:torneioId", authorization, torneioControll
 // desabilitar um usuário de um torneio
 router.delete("/torneios/disable_user/:torneioId/:userId", authorization, torneioController.describeUser);
 
+// sair de um torneio
 router.delete("/torneios/out_torneio/:torneioId", authorization, torneioController.outTorneio);
+
+//ver o ranking de um torneio
+router.get("/torneios/ranking/:usuarioId", torneioController.rankings);
 
 
 module.exports = router;
