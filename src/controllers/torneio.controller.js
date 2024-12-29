@@ -271,7 +271,7 @@ exports.subcribeTorneio = async (req, res) => {
     });
     const active = await user_toneio.findOne({
       where: {
-        usuarioId: userId,
+        usuarioId: usuarioId,
         torneioId: torneio.id,
       },
     });

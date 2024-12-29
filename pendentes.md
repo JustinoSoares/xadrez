@@ -13,3 +13,5 @@
 ## Oq devo fazer agora
 
 - atualizar os subscribed e o número de participantes
+
+- Refazer a lógica do rank para quando uma pessoa não tiver nem um ponto não ter nem um ponto 
