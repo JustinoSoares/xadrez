@@ -952,7 +952,7 @@ exports.outTorneio = async (req, res) => {
     const usuario = await Usuario.findByPk(userId);
     const data_user = {
       usuarioId : usuario.id,
-      usurname: usuario.username,
+      username: usuario.username,
       countryImg: await getCountry(usuario.country),
 
     }
