@@ -959,12 +959,19 @@ exports.outTorneio = async (req, res) => {
         torneioId: torneio.id,
       },
     });
+    const active = await user_toneio.findOne({
+      where: {
+        usuarioId: userId,
+        torneioId: torneio.id,
+      },
+    });
     const data = {
       inscritos: subscribed.length,
       tornnio: {
         id: torneio.id,
         name: torneio.name,
         date_start: torneio.date_start,
+        is_subscribed: active ? true : false,
         type: torneio.type,
         status: torneio.status,
         usuario: {
