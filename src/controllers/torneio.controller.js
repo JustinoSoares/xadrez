@@ -935,6 +935,7 @@ exports.outTorneio = async (req, res) => {
         torneioId,
       },
     });
+    
     if (!findGamer) {
       return res.status(404).json({
         status: false,
@@ -947,7 +948,14 @@ exports.outTorneio = async (req, res) => {
         msg: "Usuário não autorizado",
       });
     }
-    const usuario = Usuario.findByPk(userId);
+   
+    const usuario = await Usuario.findByPk(userId);
+    const data_user = {
+      usuarioId : usuario.id,
+      usurname: usuario.username,
+      countryImg: await getCountry(usuario.country),
+
+    }
     await user_toneio.destroy({
       where: {
         usuarioId: userId,
@@ -959,26 +967,16 @@ exports.outTorneio = async (req, res) => {
         torneioId: torneio.id,
       },
     });
-    const active = await user_toneio.findOne({
-      where: {
-        usuarioId: userId,
-        torneioId: torneio.id,
-      },
-    });
     const data = {
       inscritos: subscribed.length,
       torneio: {
         id: torneio.id,
         name: torneio.name,
         date_start: torneio.date_start,
-        is_subscribed: active ? true : false,
+        is_subscribed: false,
         type: torneio.type,
         status: torneio.status,
-        usuario: {
-          usuarioId: usuario.id,
-          usurname: usuario.username,
-          countryImg: await getCountry(usuario.country),
-        },
+        usuario: data_user,
       },
     };
     const io = req.app.get("socketio");
