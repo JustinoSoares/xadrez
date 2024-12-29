@@ -947,13 +947,13 @@ exports.outTorneio = async (req, res) => {
         msg: "Usuário não autorizado",
       });
     }
+    const usuario = Usuario.findByPk(userId);
     await user_toneio.destroy({
       where: {
         usuarioId: userId,
         torneioId,
       },
     });
-    const usuario = Usuario.findByPk(userId);
     const subscribed = await user_toneio.findAll({
       where: {
         torneioId: torneio.id,
