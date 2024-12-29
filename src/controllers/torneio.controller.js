@@ -967,7 +967,7 @@ exports.outTorneio = async (req, res) => {
     });
     const data = {
       inscritos: subscribed.length,
-      tornnio: {
+      torneio: {
         id: torneio.id,
         name: torneio.name,
         date_start: torneio.date_start,
