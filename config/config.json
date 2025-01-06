@@ -1,9 +1,9 @@
 {
   "development": {
-    "username": "xadrez_user",
-    "password": "HGzkWbfUw887rCT8PoJkNVVosdWjs93T",
-    "database": "xadrez",
-    "host": "dpg-ct8no7d2ng1s739o4l1g-a.frankfurt-postgres.render.com",
+    "username": "neondb_owner",
+    "password": "3AWrLgKBhl5Z",
+    "database": "neondb",
+    "host": "ep-wispy-violet-a8227i0t.eastus2.azure.neon.tech",
     "dialect": "postgres",
     "dialectOptions": {
       "ssl": {
@@ -13,10 +13,10 @@
     }
   },
   "test": {
-    "username": "neondb_owner",
-    "password": "XkglI30EBJLu",
-    "database": "neondb",
-    "host": "ep-damp-breeze-a5h0r5ox.us-east-2.aws.neon.tech",
+    "username": "xadrez_sdqp_user",
+    "password": "Nx1YksbzfGp37D6xHsFTDkyQPrTxyPgs",
+    "database": "xadrez_sdqp",
+    "host": "dpg-ctu20ihopnds73ci98r0-a",
     "dialect": "postgres",
     "dialectOptions": {
       "ssl": {
