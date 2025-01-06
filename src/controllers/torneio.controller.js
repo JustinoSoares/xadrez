@@ -259,7 +259,7 @@ exports.subcribeTorneio = async (req, res) => {
       });
     }
     const new_subscribed = await Usuario.findOne({
-      where: { id: usuarioId },
+      where: { id: torneio.userId },
       attributes: ["id", "username", "country"],
     });
     const bandeira = await getCountry(new_subscribed.country);
@@ -268,7 +268,7 @@ exports.subcribeTorneio = async (req, res) => {
       where: {
         torneioId: torneio.id,
       },
-    });
+    }); 
     const active = await user_toneio.findOne({
       where: {
         usuarioId: usuarioId,
