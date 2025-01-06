@@ -582,6 +582,9 @@ exports.partida = async (req, res) => {
 
 exports.subscribed = async (req, res) => {
   try {
+    const maxLen = req.query.maxLen || 3;
+    const offset = req.query.offset || 0;
+    const search = req.query.search || '';
     const torneioId = req.params.torneioId;
     const torneio = await Torneio.findByPk(torneioId);
     if (!torneio) {
@@ -593,7 +596,7 @@ exports.subscribed = async (req, res) => {
     const subscribed = await user_toneio.findAll({
       where: {
         torneioId,
-      },
+      }
     });
 
     const userSubscribed = await Promise.all(
@@ -616,7 +619,7 @@ exports.subscribed = async (req, res) => {
       status: true,
       msg: "Todos usuairos inscritos no torneio",
       quantidade: subscribed.length,
-      data: userSubscribed,
+      data: userSubscribed.slice(offset, maxLen),
     });
   } catch (error) {
     res.status(500).json({
