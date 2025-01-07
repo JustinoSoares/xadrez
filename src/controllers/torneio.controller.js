@@ -152,6 +152,26 @@ exports.getTorneios = async (req, res) => {
     const userSubscribed = await Promise.all(
       torneios.map(async (torneio) => {
         const bandeira = await getCountry(torneio.usuario.country);
+          //
+          const user_subscribed = await user_toneio.findAll({
+            where: {
+              torneioId : torneio.id,
+            }
+          });
+      
+          const new_subs = await Promise.all(
+            user_subscribed.map(async (sub) => {
+              const user = await Usuario.findByPk(sub.usuarioId);
+              const bandeira = await getCountry(user.country);
+              return {
+                username: user.username,
+                countryImg: bandeira,
+              };
+            })
+          );
+          //
+        
+
         const active = await user_toneio.findOne({
           where: {
             usuarioId: userId,
@@ -182,6 +202,7 @@ exports.getTorneios = async (req, res) => {
               username: torneio.usuario.username,
               countryImg: bandeira,
             },
+            subscribed : new_subs.slice(0, 3)
           },
         };
       })
@@ -281,7 +302,6 @@ exports.subcribeTorneio = async (req, res) => {
       torneio: {
         id: torneio.id,
         name: torneio.name,
-        now_user: usuarioId,
         date_start: torneio.date_start,
         type: torneio.type,
         status: torneio.status,
