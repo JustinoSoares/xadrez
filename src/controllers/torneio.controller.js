@@ -152,25 +152,24 @@ exports.getTorneios = async (req, res) => {
     const userSubscribed = await Promise.all(
       torneios.map(async (torneio) => {
         const bandeira = await getCountry(torneio.usuario.country);
-          //
-          const user_subscribed = await user_toneio.findAll({
-            where: {
-              torneioId : torneio.id,
-            }
-          });
-      
-          const new_subs = await Promise.all(
-            user_subscribed.map(async (sub) => {
-              const user = await Usuario.findByPk(sub.usuarioId);
-              const bandeira = await getCountry(user.country);
-              return {
-                username: user.username,
-                countryImg: bandeira,
-              };
-            })
-          );
-          //
-        
+        //
+        const user_subscribed = await user_toneio.findAll({
+          where: {
+            torneioId: torneio.id,
+          },
+        });
+
+        const new_subs = await Promise.all(
+          user_subscribed.map(async (sub) => {
+            const user = await Usuario.findByPk(sub.usuarioId);
+            const bandeira = await getCountry(user.country);
+            return {
+              username: user.username,
+              countryImg: bandeira,
+            };
+          })
+        );
+        //
 
         const active = await user_toneio.findOne({
           where: {
@@ -202,7 +201,10 @@ exports.getTorneios = async (req, res) => {
               username: torneio.usuario.username,
               countryImg: bandeira,
             },
-            subscribed : new_subs.slice(0, 3)
+            subscribed: {
+              torneioId : torneio.id,
+              subscribed: new_subs.slice(0, 3),
+            },
           },
         };
       })
@@ -289,7 +291,7 @@ exports.subcribeTorneio = async (req, res) => {
       where: {
         torneioId: torneio.id,
       },
-    }); 
+    });
     const active = await user_toneio.findOne({
       where: {
         usuarioId: usuarioId,
@@ -616,7 +618,7 @@ exports.subscribed = async (req, res) => {
     const subscribed = await user_toneio.findAll({
       where: {
         torneioId,
-      }
+      },
     });
 
     const userSubscribed = await Promise.all(
@@ -958,7 +960,7 @@ exports.outTorneio = async (req, res) => {
         torneioId,
       },
     });
-    
+
     if (!findGamer) {
       return res.status(404).json({
         status: false,
@@ -971,14 +973,13 @@ exports.outTorneio = async (req, res) => {
         msg: "Usuário não autorizado",
       });
     }
-   
+
     const usuario = await Usuario.findByPk(userId);
     const data_user = {
-      usuarioId : usuario.id,
+      usuarioId: usuario.id,
       username: usuario.username,
       countryImg: await getCountry(usuario.country),
-
-    }
+    };
     await user_toneio.destroy({
       where: {
         usuarioId: userId,
