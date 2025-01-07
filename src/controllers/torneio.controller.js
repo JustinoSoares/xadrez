@@ -225,7 +225,7 @@ exports.subcribeTorneio = async (req, res) => {
     const pass = req.body.pass;
     const usuarioId = req.userId;
 
-    if (!torneioId) {
+    if (!torneioId || !pass) {
       return res.status(400).json({
         status: false,
         msg: "Dados inválidos",
@@ -292,6 +292,26 @@ exports.subcribeTorneio = async (req, res) => {
         torneioId: torneio.id,
       },
     });
+
+     //
+     const user_subscribed = await user_toneio.findAll({
+      where: {
+        torneioId: torneio.id,
+      },
+    });
+
+    const new_subs = await Promise.all(
+      user_subscribed.map(async (sub) => {
+        const user = await Usuario.findByPk(sub.usuarioId);
+        const bandeira = await getCountry(user.country);
+        return {
+          username: user.username,
+          countryImg: bandeira,
+        };
+      })
+    );
+    //
+
     const active = await user_toneio.findOne({
       where: {
         usuarioId: usuarioId,
@@ -328,6 +348,7 @@ exports.subcribeTorneio = async (req, res) => {
   } catch (error) {
     res.status(500).json({
       status: false,
+      error: error.message,
       msg: "Erro ao inscrever usuário no torneio",
     });
   }
@@ -978,7 +999,7 @@ exports.outTorneio = async (req, res) => {
       });
     }
 
-    const usuario = await Usuario.findByPk(userId);
+    const usuario = await Usuario.findByPk(torneio.usuarioId);
     const data_user = {
       usuarioId: usuario.id,
       username: usuario.username,
@@ -995,6 +1016,25 @@ exports.outTorneio = async (req, res) => {
         torneioId: torneio.id,
       },
     });
+
+    //
+    const user_subscribed = await user_toneio.findAll({
+      where: {
+        torneioId: torneio.id,
+      },
+    });
+
+    const new_subs = await Promise.all(
+      user_subscribed.map(async (sub) => {
+        const user = await Usuario.findByPk(sub.usuarioId);
+        const bandeira = await getCountry(user.country);
+        return {
+          username: user.username,
+          countryImg: bandeira,
+        };
+      })
+    );
+    //
     const data = {
       inscritos: subscribed.length,
       torneio: {
@@ -1005,6 +1045,10 @@ exports.outTorneio = async (req, res) => {
         type: torneio.type,
         status: torneio.status,
         usuario: data_user,
+        subscribed: {
+          torneioId : torneio.id,
+          subscribed: new_subs.slice(0, 3),
+        },
       },
     };
     const io = req.app.get("socketio");
