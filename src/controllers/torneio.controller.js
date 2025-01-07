@@ -144,7 +144,7 @@ exports.getTorneios = async (req, res) => {
         {
           model: Usuario,
           as: "usuario",
-          attributes: ["id", "username", "country"],
+          attributes: ["id", "username", "country", "pontos"],
         },
       ],
     });
@@ -164,7 +164,8 @@ exports.getTorneios = async (req, res) => {
             const user = await Usuario.findByPk(sub.usuarioId);
             const bandeira = await getCountry(user.country);
             return {
-              usuarioId : user.id,
+              usuarioId: user.id,
+              pontos: user.pontos,
               username: user.username,
               countryImg: bandeira,
             };
@@ -199,11 +200,12 @@ exports.getTorneios = async (req, res) => {
             is_subscribed: active ? true : false,
             usuario: {
               usuarioId: torneio.usuario.id,
+              pontos: torneio.usuario.pontos,
               username: torneio.usuario.username,
               countryImg: bandeira,
             },
             subscribed: {
-              torneioId : torneio.id,
+              torneioId: torneio.id,
               subscribed: new_subs,
             },
           },
@@ -246,7 +248,7 @@ exports.subcribeTorneio = async (req, res) => {
         msg: "Usuário não encontrado",
       });
     }
-   
+
     const AllSubscribed = await user_toneio.findAll({
       where: {
         usuarioId,
@@ -295,8 +297,8 @@ exports.subcribeTorneio = async (req, res) => {
       },
     });
 
-     //
-     const user_subscribed = await user_toneio.findAll({
+    //
+    const user_subscribed = await user_toneio.findAll({
       where: {
         torneioId: torneio.id,
       },
@@ -307,7 +309,7 @@ exports.subcribeTorneio = async (req, res) => {
         const user = await Usuario.findByPk(sub.usuarioId);
         const bandeira = await getCountry(user.country);
         return {
-          usuarioId : user.id,
+          usuarioId: user.id,
           username: user.username,
           countryImg: bandeira,
         };
@@ -321,23 +323,27 @@ exports.subcribeTorneio = async (req, res) => {
         torneioId: torneio.id,
       },
     });
-  
+    let type = torneio.type;
+    if (type === "allvsall") {
+      type = "Todos vs Todos";
+    } else type = "Eliminatória";
     const data = {
       inscritos: subscribed.length,
       torneio: {
         id: torneio.id,
         name: torneio.name,
         date_start: torneio.date_start,
-        type: torneio.type,
+        type: type,
         status: torneio.status,
         is_subscribed: active ? true : false,
         usuario: {
           usuarioId: new_subscribed.id,
+          pontos: new_subscribed.pontos,
           username: new_subscribed.username,
           countryImg: bandeira,
         },
         subscribed: {
-          torneioId : torneio.id,
+          torneioId: torneio.id,
           subscribed: new_subs,
         },
       },
@@ -1032,13 +1038,18 @@ exports.outTorneio = async (req, res) => {
         const user = await Usuario.findByPk(sub.usuarioId);
         const bandeira = await getCountry(user.country);
         return {
-           usuarioId : user.id,
+          usuarioId: user.id,
+          pontos: user.pontos,
           username: user.username,
           countryImg: bandeira,
         };
       })
     );
     //
+    let type = torneio.type;
+    if (type === "allvsall") {
+      type = "Todos vs Todos";
+    } else type = "Eliminatória";
     const data = {
       inscritos: subscribed.length,
       torneio: {
@@ -1046,11 +1057,11 @@ exports.outTorneio = async (req, res) => {
         name: torneio.name,
         date_start: torneio.date_start,
         is_subscribed: false,
-        type: torneio.type,
+        type: type,
         status: torneio.status,
         usuario: data_user,
         subscribed: {
-          torneioId : torneio.id,
+          torneioId: torneio.id,
           subscribed: new_subs,
         },
       },
