@@ -203,7 +203,7 @@ exports.getTorneios = async (req, res) => {
             },
             subscribed: {
               torneioId : torneio.id,
-              subscribed: new_subs.slice(0, 3),
+              subscribed: new_subs,
             },
           },
         };
