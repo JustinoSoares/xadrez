@@ -199,6 +199,7 @@ exports.getTorneios = async (req, res) => {
             is_subscribed: active ? true : false,
             usuario: {
               usuarioId: torneio.usuario.id,
+              pontos: user.pontos,
               username: torneio.usuario.username,
               countryImg: bandeira,
             },
@@ -308,6 +309,7 @@ exports.subcribeTorneio = async (req, res) => {
         const bandeira = await getCountry(user.country);
         return {
           usuarioId : user.id,
+          pontos: user.pontos,
           username: user.username,
           countryImg: bandeira,
         };
@@ -1033,6 +1035,7 @@ exports.outTorneio = async (req, res) => {
         const bandeira = await getCountry(user.country);
         return {
           usuarioId : user.id,
+          pontos: user.pontos,
           username: user.username,
           countryImg: bandeira,
         };
