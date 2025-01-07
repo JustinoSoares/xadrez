@@ -281,6 +281,7 @@ exports.subcribeTorneio = async (req, res) => {
       torneio: {
         id: torneio.id,
         name: torneio.name,
+        now_user: usuarioId,
         date_start: torneio.date_start,
         type: torneio.type,
         status: torneio.status,
@@ -584,7 +585,6 @@ exports.subscribed = async (req, res) => {
   try {
     const maxLen = req.query.maxLen || 3;
     const offset = req.query.offset || 0;
-    const search = req.query.search || '';
     const torneioId = req.params.torneioId;
     const torneio = await Torneio.findByPk(torneioId);
     if (!torneio) {
