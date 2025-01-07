@@ -298,7 +298,7 @@ exports.subcribeTorneio = async (req, res) => {
         torneioId: torneio.id,
       },
     });
-
+  
     const data = {
       inscritos: subscribed.length,
       torneio: {
@@ -312,6 +312,10 @@ exports.subcribeTorneio = async (req, res) => {
           usuarioId: new_subscribed.id,
           username: new_subscribed.username,
           countryImg: bandeira,
+        },
+        subscribed: {
+          torneioId : torneio.id,
+          subscribed: new_subs.slice(0, 3),
         },
       },
     };
