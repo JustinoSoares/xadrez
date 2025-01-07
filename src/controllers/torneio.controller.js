@@ -164,6 +164,7 @@ exports.getTorneios = async (req, res) => {
             const user = await Usuario.findByPk(sub.usuarioId);
             const bandeira = await getCountry(user.country);
             return {
+              usuarioId : user.id,
               username: user.username,
               countryImg: bandeira,
             };
@@ -306,6 +307,7 @@ exports.subcribeTorneio = async (req, res) => {
         const user = await Usuario.findByPk(sub.usuarioId);
         const bandeira = await getCountry(user.country);
         return {
+          usuarioId : user.id,
           username: user.username,
           countryImg: bandeira,
         };
@@ -1030,6 +1032,7 @@ exports.outTorneio = async (req, res) => {
         const user = await Usuario.findByPk(sub.usuarioId);
         const bandeira = await getCountry(user.country);
         return {
+          usuarioId : user.id,
           username: user.username,
           countryImg: bandeira,
         };
