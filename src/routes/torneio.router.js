@@ -47,5 +47,7 @@ router.delete("/torneios/out_torneio/:torneioId", authorization, torneioControll
 //ver o ranking de um torneio
 router.get("/torneios/ranking/:usuarioId", torneioController.rankings);
 
+router.get("/torneios/owner_torneios/:usuarioId", torneioController.torneiosUsuario);
+
 
 module.exports = router;

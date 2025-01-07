@@ -1098,3 +1098,54 @@ exports.rankings = async (req, res) => {
     });
   }
 };
+
+exports.torneiosUsuario = async (req, res) => {
+  try {
+    const usuarioId = req.params.usuarioId;
+    const torneios = await Torneio.findAll({
+      where: {
+        usuarioId: usuarioId,
+      },
+    });
+    if (torneios.length < 1) {
+      return res.status(404).json({
+        status: false,
+        msg: "Nenhum torneio encontrado",
+      });
+    }
+    const data = await Promise.all(
+      torneios.map(async (torneio) => {
+        const user = await Usuario.findByPk(torneio.usuarioId);
+        const bandeira = await getCountry(user.country);
+        let type = torneio.type;
+        if (type === "allvsall") {
+          type = "Todos vs Todos";
+        } else type = "Eliminatória";
+        return {
+          id: torneio.id,
+          name: torneio.name,
+          date_start: torneio.date_start,
+          type: type,
+          status: torneio.status,
+          usuario: {
+            usuarioId: user.id,
+            pontos: user.pontos,
+            username: user.username,
+            countryImg: bandeira,
+          },
+        };
+      })
+    );
+    return res.status(200).json({
+      status: true,
+      msg: "Todos torneios do usuário",
+      data,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      msg: "Erro ao buscar torneios do usuário",
+      error: error.message,
+    });
+  }
+};
