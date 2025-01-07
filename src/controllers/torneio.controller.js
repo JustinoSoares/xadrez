@@ -225,7 +225,14 @@ exports.subcribeTorneio = async (req, res) => {
     const pass = req.body.pass;
     const usuarioId = req.userId;
 
-    if (!torneioId || !pass) {
+    const torneio = await Torneio.findByPk(torneioId);
+    if (!torneio) {
+      return res.status(404).json({
+        status: false,
+        msg: "Torneio não encontrado",
+      });
+    }
+    if (!pass) {
       return res.status(400).json({
         status: false,
         msg: "Dados inválidos",
@@ -238,13 +245,7 @@ exports.subcribeTorneio = async (req, res) => {
         msg: "Usuário não encontrado",
       });
     }
-    const torneio = await Torneio.findByPk(torneioId);
-    if (!torneio) {
-      return res.status(404).json({
-        status: false,
-        msg: "Torneio não encontrado",
-      });
-    }
+   
     const AllSubscribed = await user_toneio.findAll({
       where: {
         usuarioId,
@@ -335,7 +336,7 @@ exports.subcribeTorneio = async (req, res) => {
         },
         subscribed: {
           torneioId : torneio.id,
-          subscribed: new_subs.slice(0, 3),
+          subscribed: new_subs,
         },
       },
     };
@@ -1047,7 +1048,7 @@ exports.outTorneio = async (req, res) => {
         usuario: data_user,
         subscribed: {
           torneioId : torneio.id,
-          subscribed: new_subs.slice(0, 3),
+          subscribed: new_subs,
         },
       },
     };
