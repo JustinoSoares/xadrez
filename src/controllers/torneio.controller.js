@@ -144,7 +144,7 @@ exports.getTorneios = async (req, res) => {
         {
           model: Usuario,
           as: "usuario",
-          attributes: ["id", "username", "country", "pontos"],
+          attributes: ["id", "username", "country"],
         },
       ],
     });
@@ -199,7 +199,6 @@ exports.getTorneios = async (req, res) => {
             is_subscribed: active ? true : false,
             usuario: {
               usuarioId: torneio.usuario.id,
-              pontos: user.pontos,
               username: torneio.usuario.username,
               countryImg: bandeira,
             },
@@ -286,7 +285,7 @@ exports.subcribeTorneio = async (req, res) => {
     }
     const new_subscribed = await Usuario.findOne({
       where: { id: torneio.usuarioId },
-      attributes: ["id", "username", "country", "pontos"],
+      attributes: ["id", "username", "country"],
     });
     const bandeira = await getCountry(new_subscribed.country);
 
@@ -309,7 +308,6 @@ exports.subcribeTorneio = async (req, res) => {
         const bandeira = await getCountry(user.country);
         return {
           usuarioId : user.id,
-          pontos: user.pontos,
           username: user.username,
           countryImg: bandeira,
         };
@@ -1007,7 +1005,6 @@ exports.outTorneio = async (req, res) => {
     const usuario = await Usuario.findByPk(torneio.usuarioId);
     const data_user = {
       usuarioId: usuario.id,
-      pontos: usuario.pontos,
       username: usuario.username,
       countryImg: await getCountry(usuario.country),
     };
@@ -1035,8 +1032,7 @@ exports.outTorneio = async (req, res) => {
         const user = await Usuario.findByPk(sub.usuarioId);
         const bandeira = await getCountry(user.country);
         return {
-          usuarioId : user.id,
-          pontos: user.pontos,
+           usuarioId : user.id,
           username: user.username,
           countryImg: bandeira,
         };
