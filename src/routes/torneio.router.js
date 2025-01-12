@@ -30,7 +30,7 @@ router.get('/torneios/partida/:torneioId', torneioController.partida);
 // ver todos os usuários inscritos em um torneio
 router.get('/torneios/subscribed/:torneioId', torneioController.subscribed);
 //seleciona o  vencedor de um torneio
-router.post('/torneios/select_winner/:torneioId/:username', torneioController.select_winner);
+router.post('/torneios/select_winner/:torneioId/:vsId/:usuarioId', torneioController.select_winner);
 
 //ver o vencedor de um torneio
 router.get('/torneios/top/:torneioId', torneioController.topTorneio);

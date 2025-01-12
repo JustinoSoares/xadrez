@@ -123,7 +123,6 @@ exports.getTorneioById = async (req, res) => {
 
 exports.getTorneios = async (req, res) => {
   try {
-    const status = req.query.status || "open";
     const search = req.query.search || "";
     const userId = req.userId;
     const maxLen = req.query.maxLen || 10;
@@ -132,7 +131,6 @@ exports.getTorneios = async (req, res) => {
     const attribute = req.query.attribute || "createdAt";
     const torneios = await Torneio.findAll({
       where: {
-        status,
         name: {
           [db.Sequelize.Op.iLike]: `%${search}%`,
         },
@@ -369,6 +367,17 @@ exports.AllvsAll = async (req, res) => {
     const usuarioId = req.userId;
     const torneio = await Torneio.findByPk(torneioId);
 
+   const primary_torneio = await Torneio.findAll({
+    where : {id : torneioId},
+   });
+   if (!primary_torneio)
+   {
+    return res.status(400).json({
+      status: false,
+      msg : "Torneio não encontrado!",
+    })
+   }
+
     if (torneio.type !== "allvsall") {
       return res.status(400).json({
         status: false,
@@ -469,8 +478,7 @@ exports.AllvsAll = async (req, res) => {
       error: [
         {
           msg: "Erro ao gerar partidas",
-          param: "torneioId",
-          location: "params",
+          error : error.message,
         },
       ],
     });
@@ -612,12 +620,15 @@ exports.partida = async (req, res) => {
         const jogador1 = await Usuario.findByPk(partida.jogador1Id);
         const jogador2 = await Usuario.findByPk(partida.jogador2Id);
         return {
+          vsId : partida.id,
           winner: partida.winner || "0",
           jogador1: {
+            usuarioId : jogador1.id,
             username: jogador1.username,
             countryImg: await getCountry(jogador1.country),
           },
           jogador2: {
+            usuarioId : jogador2.id,
             username: jogador2.username,
             countryImg: await getCountry(jogador2.country),
           },
@@ -687,19 +698,17 @@ exports.subscribed = async (req, res) => {
 
 exports.select_winner = async (req, res) => {
   try {
-    const { torneioId, username, vsId } = req.params;
+    const { torneioId, usuarioId, vsId } = req.params;
     // eliminatoria ou allvsall
     const torneios = await Torneio.findByPk(torneioId);
-    if (!torneios || !username || !vsId) {
+    if (!torneios || !usuarioId || !vsId) {
       return res.status(400).json({
         status: false,
         msg: "Dados inválidos",
       });
     }
     const type = torneios.type;
-    const user = await Usuario.findOne({
-      where: { username },
-    });
+    const user = await Usuario.findByPk(usuarioId);
     if (!user) {
       return res.status(404).json({
         status: false,
@@ -737,7 +746,7 @@ exports.select_winner = async (req, res) => {
       }
     );
     await vs.update(
-      { winner: username },
+      { winner: user.username },
       {
         where: { id: vsId },
       }
@@ -775,8 +784,8 @@ exports.select_winner = async (req, res) => {
     }
 
     // find o confronto
-    const vencedor = await vs.findOne({
-      id: vsId,
+    const vencedor = await vs.findAll({
+      torneioId,
     });
     //pegar o usuername dos jogadores
     const PartidasUser = await Promise.all(
@@ -786,10 +795,12 @@ exports.select_winner = async (req, res) => {
         return {
           winner: partida.winner || "0",
           jogador1: {
+            usuarioId : jogador1.id,
             username: jogador1.username,
             countryImg: await getCountry(jogador1.country),
           },
           jogador2: {
+            usuarioId : jogador2.id,
             username: jogador2.username,
             countryImg: await getCountry(jogador2.country),
           },
@@ -837,15 +848,15 @@ exports.select_winner = async (req, res) => {
     // ranking individual do usuário
     const filteredRanking = await aux.ft_ranking(user.id, res, req);
 
-    // obter a instancia do socket.io
-    const io = req.app.get("socketio");
-    io.emit("select_winner", PartidasUser);
-    io.emit("top_users", topUsers);
-    io.emit("ranking_individual", filteredRanking);
-    io.emit("ranking_torneio", ranking_data);
+    //onst io = req.app.get("socketio");
+     io.emit("select_winner", PartidasUser);
+     io.emit("top_users", topUsers);
+     io.emit("ranking_individual", filteredRanking);
+     io.emit("ranking_torneio", ranking_data);
     return res.status(200).json({
       status: true,
       msg: "Vencedor atualizado com sucesso",
+      PartidasUser,
     });
   } catch (error) {
     res.status(500).json({
@@ -853,6 +864,7 @@ exports.select_winner = async (req, res) => {
       error: [
         {
           msg: "Erro ao selecionar o vencedor",
+          error : error.message,
         },
       ],
     });
@@ -1045,6 +1057,12 @@ exports.outTorneio = async (req, res) => {
         };
       })
     );
+    const active = await user_toneio.findOne({
+      where: {
+        usuarioId: user.id,
+        torneioId: torneio.id,
+      },
+    });
     //
     let type = torneio.type;
     if (type === "allvsall") {
@@ -1056,7 +1074,7 @@ exports.outTorneio = async (req, res) => {
         id: torneio.id,
         name: torneio.name,
         date_start: torneio.date_start,
-        is_subscribed: false,
+        is_subscribed: active,
         type: type,
         status: torneio.status,
         usuario: data_user,
