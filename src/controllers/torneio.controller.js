@@ -1066,14 +1066,14 @@ exports.outTorneio = async (req, res) => {
         };
       })
     );
-    //
 
     const active = await user_toneio.findOne({
       where: {
-        usuarioId: usuarioId,
+        usuarioId: userId,
         torneioId: torneio.id,
       },
     });
+
     let type = torneio.type;
     if (type === "allvsall") {
       type = "Todos vs Todos";
@@ -1104,6 +1104,7 @@ exports.outTorneio = async (req, res) => {
     res.status(500).json({
       status: false,
       msg: "Erro ao tentar desclassificar usuário",
+      error: error.message,
     });
   }
 };
