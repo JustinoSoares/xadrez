@@ -285,7 +285,7 @@ exports.subcribeTorneio = async (req, res) => {
     }
     const new_subscribed = await Usuario.findOne({
       where: { id: torneio.usuarioId },
-      attributes: ["id", "username", "country"],
+      attributes: ["id", "username", "country", "pontos"],
     });
     const bandeira = await getCountry(new_subscribed.country);
 
@@ -614,6 +614,14 @@ exports.partida = async (req, res) => {
     const partidas = await vs.findAll({
       where: { torneioId: torneioId },
     });
+    const old_torneio = await Torneio.findByPk(torneioId);
+    if (!old_torneio)
+    {
+      return res.status(400).json({
+        status : false,
+        msg : "Este torneio não existe",
+      });
+    }
     //pegar o usuername dos jogadores
     const PartidasUser = await Promise.all(
       partidas.map(async (partida) => {
@@ -644,6 +652,7 @@ exports.partida = async (req, res) => {
     res.status(500).json({
       status: false,
       error: error.message,
+      msg : "Erro ao gerar partidas",
     });
   }
 };
@@ -1057,13 +1066,14 @@ exports.outTorneio = async (req, res) => {
         };
       })
     );
+    //
+
     const active = await user_toneio.findOne({
       where: {
-        usuarioId: user.id,
+        usuarioId: usuarioId,
         torneioId: torneio.id,
       },
     });
-    //
     let type = torneio.type;
     if (type === "allvsall") {
       type = "Todos vs Todos";
@@ -1116,6 +1126,25 @@ exports.rankings = async (req, res) => {
     });
   }
 };
+
+exports.rank_partida = async (req, res) =>{
+  try {
+    const torneioId = req.params.torneioId;
+    const filteredRanking = await aux.ft_rank_partida(torneioId, res, req);
+    return res.status(200).json({
+      status: true,
+      msg: "Ranking do Torneio",
+      data: filteredRanking,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      status: false,
+      msg: "Erro ao buscar ranking do Torneio",
+      error: error.message,
+    });
+  }
+}
 
 exports.torneiosUsuario = async (req, res) => {
   try {

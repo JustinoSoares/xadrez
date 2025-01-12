@@ -37,7 +37,7 @@ async function ft_ranking(usuarioId, res, req) {
 
       // Buscar todos os usuários e suas pontuações para este torneio
       const ranking_for_each_user = await user_toneio.findAll({
-        where: { torneioId: each_torneio.id },
+        where: { torneioId: each_torneio.id, pontos: pontos > 0 },
         order: [["pontos", "DESC"]],
       });
 
@@ -64,4 +64,36 @@ async function ft_ranking(usuarioId, res, req) {
   return filteredRanking;
 }
 
-module.exports = { ft_ranking };
+async function ft_rank_partida(torneioId, res, req) {
+  const jogadores = await user_toneio.findAll({
+    where: { torneioId },
+    order: [["pontos", "DESC"]],
+  });
+
+  if (!jogadores.length) {
+    return {
+      status: false,
+      msg: "Ranking Zerado",
+    };
+  }
+  const ranking = await Promise.all(
+    jogadores.map(async (list) => {
+      // Buscar todos os usuários e suas pontuações para este torneio
+      const user = await Usuario.findByPk(list.usuarioId);
+      if (!user) return null;
+      return {
+        usuario: {
+          usuarioId: user.id,
+          username: user.username,
+          bandeira: await getCountry(user.country),
+          pontos: list.pontos,
+        },
+      };
+    })
+  );
+  // Remover torneios onde o usuário não foi encontrado
+  const filteredRanking = ranking.filter((item) => item.usuario.pontos > 0);
+  return filteredRanking;
+}
+
+module.exports = { ft_ranking, ft_rank_partida };

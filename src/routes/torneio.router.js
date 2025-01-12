@@ -44,8 +44,10 @@ router.delete("/torneios/disable_user/:torneioId/:userId", authorization, tornei
 // sair de um torneio
 router.delete("/torneios/out_torneio/:torneioId", authorization, torneioController.outTorneio);
 
-//ver o ranking de um torneio
-router.get("/torneios/ranking/:usuarioId", torneioController.rankings);
+//ver o ranking de um usuários nos torneios
+router.get("/torneios/ranking_owner/:usuarioId", torneioController.rankings); 
+// ver o ranking de um torneio
+router.get("/torneios/ranking_partida/:torneioId", torneioController.rank_partida);
 
 router.get("/torneios/owner_torneios/:usuarioId", torneioController.torneiosUsuario);
 
