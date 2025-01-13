@@ -611,9 +611,7 @@ exports.close_torneio = async (req, res) => {
 exports.partida = async (req, res) => {
   try {
     const torneioId = req.params.torneioId;
-    const partidas = await vs.findAll({
-      where: { torneioId: torneioId },
-    });
+    const torneio = await Torneio.findByPk(torneioId);
     const old_torneio = await Torneio.findByPk(torneioId);
     if (!old_torneio)
     {
@@ -622,6 +620,9 @@ exports.partida = async (req, res) => {
         msg : "Este torneio não existe",
       });
     }
+    const partidas = await vs.findAll({
+      where: { torneioId: torneioId },
+    });
     //pegar o usuername dos jogadores
     const PartidasUser = await Promise.all(
       partidas.map(async (partida) => {
@@ -643,9 +644,21 @@ exports.partida = async (req, res) => {
         };
       })
     );
+    let type = old_torneio.type;
+    if (type === "allvsall") {
+      type = "Todos vs Todos";
+    }
+    else type = "Eliminatória";
     res.status(200).json({
       status: true,
       msg: "Todas partidas do torneio",
+      torneio : {
+        torneioId : old_torneio.id,
+        name : old_torneio.name,
+        date_start : old_torneio.date_start,
+        type : type,
+        status : old_torneio.status,
+      },
       PartidasUser,
     });
   } catch (error) {
