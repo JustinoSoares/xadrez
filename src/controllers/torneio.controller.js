@@ -1039,6 +1039,7 @@ exports.outTorneio = async (req, res) => {
       where: {
         usuarioId: userId,
         torneioId,
+        
       },
     });
     const subscribed = await user_toneio.findAll({
