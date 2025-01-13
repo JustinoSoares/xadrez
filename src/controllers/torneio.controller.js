@@ -1091,7 +1091,7 @@ exports.outTorneio = async (req, res) => {
         id: torneio.id,
         name: torneio.name,
         date_start: torneio.date_start,
-        is_subscribed: true,
+        is_subscribed: false,
         type: type,
         status: torneio.status,
         usuario: data_user,
