@@ -1081,13 +1081,6 @@ exports.outTorneio = async (req, res) => {
       })
     );
 
-    const active = await user_toneio.findOne({
-      where: {
-        usuarioId: userId,
-        torneioId: torneio.id,
-      },
-    });
-
     let type = torneio.type;
     if (type === "allvsall") {
       type = "Todos vs Todos";
@@ -1098,7 +1091,7 @@ exports.outTorneio = async (req, res) => {
         id: torneio.id,
         name: torneio.name,
         date_start: torneio.date_start,
-        is_subscribed: active,
+        is_subscribed: true,
         type: type,
         status: torneio.status,
         usuario: data_user,
