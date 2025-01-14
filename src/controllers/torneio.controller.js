@@ -1163,12 +1163,6 @@ exports.torneiosUsuario = async (req, res) => {
         usuarioId: usuarioId,
       },
     });
-    if (torneios.length < 1) {
-      return res.status(404).json({
-        status: false,
-        msg: "Nenhum torneio encontrado",
-      });
-    }
     const data = await Promise.all(
       torneios.map(async (torneio) => {
         const user = await Usuario.findByPk(torneio.usuarioId);
