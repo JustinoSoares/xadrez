@@ -644,6 +644,11 @@ exports.partida = async (req, res) => {
         };
       })
     );
+    const subcribe = await user_toneio.findAll({
+      where: {
+        torneioId,
+      },
+    });
     let type = old_torneio.type;
     if (type === "allvsall") {
       type = "Todos vs Todos";
@@ -653,7 +658,7 @@ exports.partida = async (req, res) => {
       status: true,
       msg: "Todas partidas do torneio",
       torneio : {
-        inscritos : PartidasUser.length,
+        inscritos : subcribe.length,
         torneioId : old_torneio.id,
         name : old_torneio.name,
         date_start : old_torneio.date_start,
