@@ -58,6 +58,7 @@ exports.login = async (req, res) => {
       {
         id: usuario.id,
         email: usuario.email,
+        username: usuario.username,
         tipo_usuario: usuario.tipo_usuario,
       },
       secret,
@@ -67,8 +68,6 @@ exports.login = async (req, res) => {
     return res.status(200).json({
       status: true,
       msg: "Login efetuado com sucesso",
-      id: usuario.id,
-      username: usuario.username,
       token,
     });
   } catch (error) {
@@ -83,4 +82,23 @@ exports.login = async (req, res) => {
       ],
     });
   }
+};
+
+exports.verifyToken = async (req, res) => {
+  const token = req.params.token;
+  const secret = process.env.JWT_SECRET_KEY;
+
+  jwt.verify(token, secret, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({
+        status: false,
+        msg: "Token inválido",
+      });
+    }
+    req.usuario = decoded;
+    return res.status(200).json({
+      status: true,
+      data: decoded,
+    });
+  });
 };

@@ -496,7 +496,6 @@ exports.AllvsAll = async (req, res) => {
       PartidasUser,
     }
     //
-
     const io = req.app.get("sockeio");
     io.emit("partidas_geradas", data);
     return res.status(200).json({

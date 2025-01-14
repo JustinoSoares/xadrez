@@ -10,6 +10,8 @@ const router = Router();
 
 router.post('/usuarios/create', validate.create, usuarioController.createUsuario);
 router.post('/usuarios/login', validateAuth.auth, usuarioAuth.login);
+router.get('/usuarios/verify/:token', usuarioAuth.verifyToken);
+
 router.get('/usuarios/all', usuarioController.getUsuarios);
 
 router.get('/usuarios/each/:id', usuarioController.getUsuarioById);
