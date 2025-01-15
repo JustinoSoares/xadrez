@@ -496,7 +496,7 @@ exports.AllvsAll = async (req, res) => {
       PartidasUser,
     }
     //
-    const io = req.app.get("sockeio");
+    const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
     return res.status(200).json({
       status: true,
@@ -1201,6 +1201,11 @@ exports.torneiosUsuario = async (req, res) => {
     const data = await Promise.all(
       torneios.map(async (torneio) => {
         const user = await Usuario.findByPk(torneio.usuarioId);
+        const inscritos = await user_toneio.findAll({
+          where: {
+            torneioId: torneio.id,
+          },
+        });
         const bandeira = await getCountry(user.country);
         let type = torneio.type;
         if (type === "allvsall") {
@@ -1209,6 +1214,7 @@ exports.torneiosUsuario = async (req, res) => {
         return {
           id: torneio.id,
           name: torneio.name,
+          inscritos: inscritos.length,
           date_start: torneio.date_start,
           type: type,
           status: torneio.status,
