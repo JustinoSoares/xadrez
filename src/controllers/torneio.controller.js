@@ -931,6 +931,7 @@ exports.select_winner = async (req, res) => {
     // find o confronto
     const vencedor = await vs.findAll({
       where: { torneioId: torneioId },
+      order: [["id", "ASC"]],
     });
     //pegar o usuername dos jogadores
     const PartidasUser = await Promise.all(
@@ -1015,7 +1016,7 @@ exports.select_winner = async (req, res) => {
         type: type,
         status: torneios.status,
       },
-      PartidasUser,
+      PartidasUser : PartidasUser.sort((a, b) => a.vsId - b.vsId),
     };
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
