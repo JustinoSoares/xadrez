@@ -986,7 +986,7 @@ exports.select_winner = async (req, res) => {
     if (type === "allvsall") {
       type = "Todos vs Todos";
     } else type = "Eliminatória";
-    data = {
+    const data = {
       status: true,
       msg: "Todas partidas do torneio",
       torneio: {
@@ -1001,14 +1001,12 @@ exports.select_winner = async (req, res) => {
       PartidasUser,
     };
     //onst io = req.app.get("socketio");
-    io.emit("partidas_geradas", PartidasUser);
+    io.emit("partidas_geradas", data);
     io.emit("top_users", topUsers);
     io.emit("ranking_individual", filteredRanking);
     io.emit("ranking_torneio", ranking_data);
     return res.status(200).json({
-      status: true,
-      msg: "Vencedor atualizado com sucesso",
-      PartidasUser,
+      data,
     });
   } catch (error) {
     res.status(500).json({
