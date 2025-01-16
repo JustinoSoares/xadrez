@@ -546,29 +546,28 @@ exports.eliminatoria = async (req, res) => {
   try {
     const torneioId = req.params.torneioId;
     const usuarioId = req.userId;
-    const torneio = await Torneio.findByPk(torneioId,{
+    const torneio = await Torneio.findByPk(torneioId, {
       where: {
         id: torneioId,
         status: "open",
       },
-      limit : 1,
+      limit: 1,
     });
 
-  
     if (!torneio) {
       return res.status(404).json({
         status: false,
         msg: "Torneio não encontrado ou já encerrado",
       });
     }
-   
+
     if (torneio.type != "eliminatoria") {
       return res.status(400).json({
         status: false,
         msg: "Tipo de torneio inválido, tente outro tipo",
       });
     }
-  
+
     if (usuarioId !== torneio.usuarioId) {
       return res.status(403).json({
         status: false,
@@ -579,7 +578,7 @@ exports.eliminatoria = async (req, res) => {
         ],
       });
     }
-   
+
     if (!torneio || torneio.status != "open") {
       return res.status(404).json({
         status: false,
@@ -606,7 +605,7 @@ exports.eliminatoria = async (req, res) => {
         msg: "O número de jogadores inscritos é insuficiente",
       });
     }
-   
+
     for (let i = 0; i < jogadoresInscritos.length; i++) {
       if (i % 2 === 0) {
         const existe = await vs.findAll({
@@ -634,6 +633,7 @@ exports.eliminatoria = async (req, res) => {
         const jogador1 = await Usuario.findByPk(partida.jogador1Id);
         const jogador2 = await Usuario.findByPk(partida.jogador2Id);
         return {
+          vsId: partida.id,
           winner: partida.winner || "0",
           jogador1: {
             usuarioId: jogador1.id,
@@ -665,8 +665,8 @@ exports.eliminatoria = async (req, res) => {
         type: "Eliminatória",
         status: torneio.status,
       },
-      PartidasUser, 
-    }
+      PartidasUser,
+    };
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
     res.status(200).json({
@@ -843,7 +843,7 @@ exports.select_winner = async (req, res) => {
         msg: "Dados inválidos",
       });
     }
-    const type = torneios.type;
+    let type = torneios.type;
     const user = await Usuario.findByPk(usuarioId);
     if (!user) {
       return res.status(404).json({
@@ -887,9 +887,9 @@ exports.select_winner = async (req, res) => {
         where: { id: vsId },
       }
     );
+
     if (type === "eliminatoria") {
       const partida = await vs.findByPk(vsId);
-
       if (partida.jogador1Id != user.id) {
         const new_torneio = await Torneio.findByPk(torneioId);
         await user_toneio.update(
@@ -899,11 +899,11 @@ exports.select_winner = async (req, res) => {
           {
             where: {
               torneioId,
-              jogador1Id: partida.jogador1Id,
+              usuarioId: partida.jogador1Id,
             },
           }
         );
-      } else if (partida.jogador2Id != user.id) {
+      } else {
         const new_torneio = await Torneio.findByPk(torneioId);
         await user_toneio.update(
           {
@@ -912,7 +912,7 @@ exports.select_winner = async (req, res) => {
           {
             where: {
               torneioId,
-              jogador2Id: partida.jogador2Id,
+              usuarioId: partida.jogador2Id,
             },
           }
         );
@@ -921,7 +921,10 @@ exports.select_winner = async (req, res) => {
 
     // find o confronto
     const vencedor = await vs.findAll({
-      torneioId,
+      where: {
+        torneioId,
+        winner: user.username,
+      },
     });
     //pegar o usuername dos jogadores
     const PartidasUser = await Promise.all(
@@ -929,6 +932,7 @@ exports.select_winner = async (req, res) => {
         const jogador1 = await Usuario.findByPk(partida.jogador1Id);
         const jogador2 = await Usuario.findByPk(partida.jogador2Id);
         return {
+          vsId: partida.id,
           winner: partida.winner || "0",
           jogador1: {
             usuarioId: jogador1.id,
@@ -952,6 +956,7 @@ exports.select_winner = async (req, res) => {
       order: [["pontos", "DESC"]],
       limit: 3,
     });
+
     const topUsers = await Promise.all(
       top.map(async (user) => {
         const usuario = await Usuario.findByPk(user.usuarioId);
@@ -980,7 +985,13 @@ exports.select_winner = async (req, res) => {
         };
       })
     );
-
+    const subcribe = await user_toneio.findAll({
+      where: {
+        torneioId,
+      },
+    });
+ 
+  
     // ranking individual do usuário
     const filteredRanking = await aux.ft_ranking(user.id, res, req);
     if (type === "allvsall") {
@@ -991,16 +1002,16 @@ exports.select_winner = async (req, res) => {
       msg: "Todas partidas do torneio",
       torneio: {
         inscritos: subcribe.length,
-        usuarioId: old_torneio.usuarioId,
-        torneioId: old_torneio.id,
-        name: old_torneio.name,
-        date_start: old_torneio.date_start,
+        usuarioId: torneios.usuarioId,
+        torneioId: torneios.id,
+        name: torneios.name,
+        date_start: torneios.date_start,
         type: type,
-        status: old_torneio.status,
+        status: torneios.status,
       },
       PartidasUser,
     };
-    //onst io = req.app.get("socketio");
+    const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
     io.emit("top_users", topUsers);
     io.emit("ranking_individual", filteredRanking);
@@ -1332,7 +1343,6 @@ exports.torneiosUsuario = async (req, res) => {
   }
 };
 
-
 exports.deleteTorneio = async (req, res) => {
   try {
     const torneioId = req.params.torneioId;
@@ -1383,10 +1393,9 @@ exports.deleteTorneio = async (req, res) => {
       error: error.message,
     });
   }
-}
+};
 
 exports.updateTorneio = async (req, res) => {
-
   try {
     const torneioId = req.params.torneioId;
     const usuarioId = req.userId;
@@ -1434,8 +1443,4 @@ exports.updateTorneio = async (req, res) => {
       error: error.message,
     });
   }
-}
-
-
-
-
+};

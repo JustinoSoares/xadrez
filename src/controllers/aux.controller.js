@@ -20,49 +20,76 @@ async function getCountry(country) {
 }
 
 async function ft_ranking(usuarioId, res, req) {
-  const torneios_participados = await user_toneio.findAll({
-    where: { usuarioId },
-  });
+  try {
+    const torneios_participados = await user_toneio.findAll({
+      where: { usuarioId },
+    });
 
-  if (!torneios_participados.length) {
+    if (!torneios_participados.length) {
+      return {
+        status: false,
+        msg: "Nenhum torneio encontrado para o usuário.",
+      };
+    }
+
+    const ranking = await Promise.all(
+      torneios_participados.map(async (torneio) => {
+        // Buscar o torneio pelo ID
+        const each_torneio = await Torneio.findByPk(torneio.torneioId);
+        if (!each_torneio) {
+          return null; // Ignora torneios inexistentes
+        }
+
+        // Buscar todos os usuários e suas pontuações para este torneio
+        const ranking_for_each_user = await user_toneio.findAll({
+          where: { torneioId: each_torneio.id },
+          order: [["pontos", "DESC"]],
+        });
+
+        // Encontrar a posição do usuário no ranking
+        const userRanking = ranking_for_each_user.findIndex(
+          (user) => user.usuarioId === usuarioId
+        );
+
+        // Caso o usuário seja encontrado no ranking
+        if (userRanking !== -1) {
+          const user = ranking_for_each_user[userRanking];
+          return {
+            torneio: each_torneio.name, // Supondo que Torneio tenha o atributo 'name'
+            pos: userRanking + 1,
+            pontos: user.pontos,
+          };
+        }
+
+        // Caso o usuário não esteja no ranking
+        return null;
+      })
+    );
+
+    // Filtrar torneios válidos
+    const filteredRanking = ranking.filter((item) => item !== null);
+
+    // Retornar ranking ou mensagem de vazio
+    if (!filteredRanking.length) {
+      return {
+        status: false,
+        msg: "Usuário não está classificado em nenhum torneio.",
+      };
+    }
+
+    return {
+      status: true,
+      ranking: filteredRanking,
+    };
+  } catch (error) {
+    console.error("Erro ao buscar ranking:", error);
     return {
       status: false,
-      msg: "Nenhum torneio encontrado para o usuário.",
+      msg: "Erro interno ao buscar ranking.",
     };
   }
-  const ranking = await Promise.all(
-    torneios_participados.map(async (torneio) => {
-      // Buscar o torneio pelo ID
-      const each_torneio = await Torneio.findByPk(torneio.torneioId);
-
-      // Buscar todos os usuários e suas pontuações para este torneio
-      const ranking_for_each_user = await user_toneio.findAll({
-        where: { torneioId: each_torneio.id, pontos: pontos > 0 },
-        order: [["pontos", "DESC"]],
-      });
-
-      // Encontrar a posição do usuário
-      const userRanking = ranking_for_each_user.findIndex(
-        (user) => user.usuarioId === usuarioId
-      );
-      // Caso o usuário seja encontrado, retornar os dados
-      if (userRanking !== -1) {
-        const user = ranking_for_each_user[userRanking];
-
-        return {
-          torneio: each_torneio.name, // Supondo que Torneio tenha o atributo 'nome'
-          pos: userRanking + 1,
-          pontos: user.pontos,
-        };
-      }
-      // Caso o usuário não esteja no ranking
-      return null;
-    })
-  );
-  // Remover torneios onde o usuário não foi encontrado
-  const filteredRanking = ranking.filter((item) => item !== null);
-  return filteredRanking;
 }
+
 
 async function ft_rank_partida(torneioId, res, req) {
   const jogadores = await user_toneio.findAll({
