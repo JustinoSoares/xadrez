@@ -499,8 +499,6 @@ exports.AllvsAll = async (req, res) => {
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
     return res.status(200).json({
-      status: true,
-      msg: "Partidas geradas com sucesso",
       data : data,
     });
   } catch (error) {
@@ -683,7 +681,7 @@ exports.partida = async (req, res) => {
       type = "Todos vs Todos";
     }
     else type = "Eliminatória";
-    res.status(200).json({
+    data = {
       status: true,
       msg: "Todas partidas do torneio",
       torneio : {
@@ -696,6 +694,9 @@ exports.partida = async (req, res) => {
         status : old_torneio.status,
       },
       PartidasUser,
+    }
+    res.status(200).json({
+      data : data,
     });
   } catch (error) {
     res.status(500).json({
