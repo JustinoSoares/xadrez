@@ -9,7 +9,6 @@ const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const axios = require("axios");
 const aux = require("./aux.controller");
-const { where } = require("sequelize");
 
 async function getCountry(country) {
   try {
@@ -593,7 +592,6 @@ exports.eliminatoria = async (req, res) => {
         status: "on",
       },
     });
-
 
     if (jogadoresInscritos.length % 2 !== 0) {
       return res.status(400).json({
@@ -1335,3 +1333,111 @@ exports.torneiosUsuario = async (req, res) => {
     });
   }
 };
+
+
+exports.deleteTorneio = async (req, res) => {
+  try {
+    const torneioId = req.params.torneioId;
+    const torneio = await Torneio.findByPk(torneioId);
+    const usuarioId = req.userId;
+    if (!torneio) {
+      return res.status(404).json({
+        status: false,
+        msg: "Torneio não encontrado",
+      });
+    }
+    if (torneio.status !== "closed") {
+      return res.status(400).json({
+        status: false,
+        msg: "Torneio não encerrado",
+      });
+    }
+
+    if (torneio.usuarioId !== usuarioId) {
+      return res.status(403).json({
+        status: false,
+        msg: "Usuário não autorizado",
+      });
+    }
+    await Torneio.destroy({
+      where: {
+        id: torneioId,
+      },
+    });
+    await user_toneio.destroy({
+      where: {
+        torneioId,
+      },
+    });
+    await vs.destroy({
+      where: {
+        torneioId,
+      },
+    });
+    return res.status(200).json({
+      status: true,
+      msg: "Torneio deletado com sucesso",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      msg: "Erro ao deletar torneio",
+      error: error.message,
+    });
+  }
+}
+
+exports.updateTorneio = async (req, res) => {
+
+  try {
+    const torneioId = req.params.torneioId;
+    const usuarioId = req.userId;
+    const { name, date_start, type, pass } = req.body;
+    const torneio = await Torneio.findByPk(torneioId);
+    if (!torneio) {
+      return res.status(404).json({
+        status: false,
+        msg: "Torneio não encontrado",
+      });
+    }
+    if (torneio.usuarioId !== usuarioId) {
+      return res.status(403).json({
+        status: false,
+        msg: "Usuário não autorizado",
+      });
+    }
+    if (torneio.status !== "open") {
+      return res.status(400).json({
+        status: false,
+        msg: "Torneio não pode ser alterado!",
+      });
+    }
+    await Torneio.update(
+      {
+        name,
+        date_start,
+        type,
+        pass,
+      },
+      {
+        where: {
+          id: torneioId,
+        },
+      }
+    );
+    return res.status(200).json({
+      status: true,
+      msg: "Torneio atualizado com sucesso",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      status: false,
+      msg: "Erro ao atualizar torneio",
+      error: error.message,
+    });
+  }
+}
+
+
+
+

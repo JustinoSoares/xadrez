@@ -52,4 +52,8 @@ router.get("/torneios/ranking_partida/:torneioId", torneioController.rank_partid
 router.get("/torneios/owner_torneios/:usuarioId", torneioController.torneiosUsuario);
 
 
+router.delete("/torneios/delete/:torneioId", authorization, torneioController.deleteTorneio);
+router.put("/torneios/update/:torneioId", authorization, torneioController.updateTorneio);
+
+
 module.exports = router;
