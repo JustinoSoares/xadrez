@@ -483,6 +483,7 @@ exports.AllvsAll = async (req, res) => {
     //
     const partidas = await vs.findAll({
       where: { torneioId: torneioId },
+      order: [["id", "ASC"]],
     });
     //pegar o usuername dos jogadores
     const PartidasUser = await Promise.all(
@@ -524,7 +525,7 @@ exports.AllvsAll = async (req, res) => {
         type: "Todos vs Todos",
         status: primary_torneio.status,
       },
-      PartidasUser,
+      PartidasUser : PartidasUser.sort((a, b) => a.vsId - b.vsId),
     };
     //
     const io = req.app.get("socketio");
@@ -627,6 +628,7 @@ exports.eliminatoria = async (req, res) => {
     }
     const this_partidas = await vs.findAll({
       where: { torneioId: torneioId },
+      order: [["id", "ASC"]],
     });
 
     //pegar o usuername dos jogadores
@@ -669,7 +671,7 @@ exports.eliminatoria = async (req, res) => {
         type: "Eliminatória",
         status: torneio.status,
       },
-      PartidasUser,
+      PartidasUser : PartidasUser.sort((a, b) => a.vsId - b.vsId),
     };
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
@@ -731,6 +733,7 @@ exports.partida = async (req, res) => {
     }
     const partidas = await vs.findAll({
       where: { torneioId: torneioId },
+      order: [["id", "ASC"]],
     });
     //pegar o usuername dos jogadores
     const PartidasUser = await Promise.all(
@@ -776,7 +779,7 @@ exports.partida = async (req, res) => {
         type: type,
         status: old_torneio.status,
       },
-      PartidasUser,
+      PartidasUser : PartidasUser.sort((a, b) => a.vsId - b.vsId),
     };
     res.status(200).json({
       data: data,
