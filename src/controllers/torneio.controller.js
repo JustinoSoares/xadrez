@@ -489,18 +489,20 @@ exports.AllvsAll = async (req, res) => {
       partidas.map(async (partida) => {
         const jogador1 = await Usuario.findByPk(partida.jogador1Id);
         const jogador2 = await Usuario.findByPk(partida.jogador2Id);
+        const bandeira1 = await getCountry(jogador1.country);
+        const bandeira2 = await getCountry(jogador2.country);
         return {
           vsId: partida.id,
           winner: partida.winner || "0",
           jogador1: {
             usuarioId: jogador1.id,
             username: jogador1.username,
-            countryImg: await getCountry(jogador1.country),
+            countryImg: bandeira1,
           },
           jogador2: {
             usuarioId: jogador2.id,
             username: jogador2.username,
-            countryImg: await getCountry(jogador2.country),
+            countryImg: bandeira2,
           },
         };
       })
@@ -632,18 +634,20 @@ exports.eliminatoria = async (req, res) => {
       this_partidas.map(async (partida) => {
         const jogador1 = await Usuario.findByPk(partida.jogador1Id);
         const jogador2 = await Usuario.findByPk(partida.jogador2Id);
+        const bandeira1 = await getCountry(jogador1.country);
+        const bandeira2 = await getCountry(jogador2.country);
         return {
           vsId: partida.id,
           winner: partida.winner || "0",
           jogador1: {
             usuarioId: jogador1.id,
             username: jogador1.username,
-            countryImg: await getCountry(jogador1.country),
+            countryImg: bandeira1,
           },
           jogador2: {
             usuarioId: jogador2.id,
             username: jogador2.username,
-            countryImg: await getCountry(jogador2.country),
+            countryImg: bandeira2,
           },
         };
       })
@@ -733,18 +737,20 @@ exports.partida = async (req, res) => {
       partidas.map(async (partida) => {
         const jogador1 = await Usuario.findByPk(partida.jogador1Id);
         const jogador2 = await Usuario.findByPk(partida.jogador2Id);
+        const bandeira1 = await getCountry(jogador1.country);
+        const bandeira2 = await getCountry(jogador2.country);
         return {
           vsId: partida.id,
           winner: partida.winner || "0",
           jogador1: {
             usuarioId: jogador1.id,
             username: jogador1.username,
-            countryImg: await getCountry(jogador1.country),
+            countryImg: bandeira1,
           },
           jogador2: {
             usuarioId: jogador2.id,
             username: jogador2.username,
-            countryImg: await getCountry(jogador2.country),
+            countryImg: bandeira2,
           },
         };
       })
