@@ -31,7 +31,8 @@ exports.createTorneio = async (req, res) => {
         errors: errors.array(),
       });
     }
-    const { name, pass, date_start, type } = req.body;
+    const { name, pass, date_start } = req.body;
+    let { type } = req.body;
     const usuarioId = req.userId;
 
     const io = req.app.get("socketio");
@@ -44,20 +45,22 @@ exports.createTorneio = async (req, res) => {
       usuarioId,
     });
 
+    if (!torneio) {
+      return res.status(400).json({
+        status: false,
+        msg: "Erro ao criar torneio",
+      });
+    }
+
     const user = await Usuario.findByPk(usuarioId);
     const subscribed = await user_toneio.findAll({
       where: {
         torneioId: torneio.id,
       },
     });
-    const user_subscribed = await user_toneio.findAll({
-      where: {
-        torneioId: torneio.id,
-      },
-    });
 
     const new_subs = await Promise.all(
-      user_subscribed.map(async (sub) => {
+      subscribed.map(async (sub) => {
         const user = await Usuario.findByPk(sub.usuarioId);
         const bandeira = await getCountry(user.country);
         return {
@@ -81,9 +84,9 @@ exports.createTorneio = async (req, res) => {
         status: torneio.status,
         is_subscribed: false,
         usuario: {
-          usuarioId: torneio.usuario.id,
-          pontos: torneio.usuario.pontos,
-          username: torneio.usuario.username,
+          usuarioId: usuarioId,
+          pontos: user.pontos,
+          username: user.username,
           countryImg: await getCountry(user.country),
         },
         subscribed: {
