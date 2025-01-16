@@ -50,19 +50,45 @@ exports.createTorneio = async (req, res) => {
         torneioId: torneio.id,
       },
     });
+    const user_subscribed = await user_toneio.findAll({
+      where: {
+        torneioId: torneio.id,
+      },
+    });
+
+    const new_subs = await Promise.all(
+      user_subscribed.map(async (sub) => {
+        const user = await Usuario.findByPk(sub.usuarioId);
+        const bandeira = await getCountry(user.country);
+        return {
+          usuarioId: user.id,
+          pontos: user.pontos,
+          username: user.username,
+          countryImg: bandeira,
+        };
+      })
+    );
+    if (type === "allvsall") {
+      type = "Todos vs Todos";
+    } else type = "Eliminatória";
     const data = {
+      inscritos: subscribed.length,
       torneio: {
-        inscritos: subscribed.length,
         id: torneio.id,
         name: torneio.name,
         date_start: torneio.date_start,
-        type: torneio.type,
+        type: type,
         status: torneio.status,
         is_subscribed: false,
         usuario: {
-          usuarioId: torneio.usuarioId,
-          username: user.username,
+          usuarioId: torneio.usuario.id,
+          pontos: torneio.usuario.pontos,
+          username: torneio.usuario.username,
           countryImg: await getCountry(user.country),
+        },
+        subscribed: {
+          torneioId: torneio.id,
+          subscribed: new_subs,
         },
       },
     };
@@ -367,16 +393,15 @@ exports.AllvsAll = async (req, res) => {
     const usuarioId = req.userId;
     const torneio = await Torneio.findByPk(torneioId);
 
-   const primary_torneio = await Torneio.findAll({
-    where : {id : torneioId},
-   });
-   if (!primary_torneio)
-   {
-    return res.status(400).json({
-      status: false,
-      msg : "Torneio não encontrado!",
-    })
-   }
+    const primary_torneio = await Torneio.findAll({
+      where: { id: torneioId },
+    });
+    if (!primary_torneio) {
+      return res.status(400).json({
+        status: false,
+        msg: "Torneio não encontrado!",
+      });
+    }
 
     if (torneio.type !== "allvsall") {
       return res.status(400).json({
@@ -455,15 +480,15 @@ exports.AllvsAll = async (req, res) => {
         const jogador1 = await Usuario.findByPk(partida.jogador1Id);
         const jogador2 = await Usuario.findByPk(partida.jogador2Id);
         return {
-          vsId : partida.id,
+          vsId: partida.id,
           winner: partida.winner || "0",
           jogador1: {
-            usuarioId : jogador1.id,
+            usuarioId: jogador1.id,
             username: jogador1.username,
             countryImg: await getCountry(jogador1.country),
           },
           jogador2: {
-            usuarioId : jogador2.id,
+            usuarioId: jogador2.id,
             username: jogador2.username,
             countryImg: await getCountry(jogador2.country),
           },
@@ -478,35 +503,34 @@ exports.AllvsAll = async (req, res) => {
     let type = primary_torneio.type;
     if (type === "allvsall") {
       type = "Todos vs Todos";
-    }
-    else type = "Eliminatória";
+    } else type = "Eliminatória";
 
     data = {
       status: true,
       msg: "Todas partidas do torneio",
-      torneio : {
-        inscritos : subcribe.length,
-        usuarioId : primary_torneio.usuarioId,
-        torneioId : primary_torneio.id,
-        name : primary_torneio.name,
-        date_start : primary_torneio.date_start,
-        type : type,
-        status : primary_torneio.status,
+      torneio: {
+        inscritos: subcribe.length,
+        usuarioId: primary_torneio.usuarioId,
+        torneioId: primary_torneio.id,
+        name: primary_torneio.name,
+        date_start: primary_torneio.date_start,
+        type: type,
+        status: primary_torneio.status,
       },
       PartidasUser,
-    }
+    };
     //
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
     return res.status(200).json({
-      data : data,
+      data: data,
     });
   } catch (error) {
     res.status(500).json({
       error: [
         {
           msg: "Erro ao gerar partidas",
-          error : error.message,
+          error: error.message,
         },
       ],
     });
@@ -640,11 +664,10 @@ exports.partida = async (req, res) => {
   try {
     const torneioId = req.params.torneioId;
     const old_torneio = await Torneio.findByPk(torneioId);
-    if (!old_torneio)
-    {
+    if (!old_torneio) {
       return res.status(400).json({
-        status : false,
-        msg : "Este torneio não existe",
+        status: false,
+        msg: "Este torneio não existe",
       });
     }
     const partidas = await vs.findAll({
@@ -656,15 +679,15 @@ exports.partida = async (req, res) => {
         const jogador1 = await Usuario.findByPk(partida.jogador1Id);
         const jogador2 = await Usuario.findByPk(partida.jogador2Id);
         return {
-          vsId : partida.id,
+          vsId: partida.id,
           winner: partida.winner || "0",
           jogador1: {
-            usuarioId : jogador1.id,
+            usuarioId: jogador1.id,
             username: jogador1.username,
             countryImg: await getCountry(jogador1.country),
           },
           jogador2: {
-            usuarioId : jogador2.id,
+            usuarioId: jogador2.id,
             username: jogador2.username,
             countryImg: await getCountry(jogador2.country),
           },
@@ -679,30 +702,29 @@ exports.partida = async (req, res) => {
     let type = old_torneio.type;
     if (type === "allvsall") {
       type = "Todos vs Todos";
-    }
-    else type = "Eliminatória";
+    } else type = "Eliminatória";
     data = {
       status: true,
       msg: "Todas partidas do torneio",
-      torneio : {
-        inscritos : subcribe.length,
-        usuarioId : old_torneio.usuarioId,
-        torneioId : old_torneio.id,
-        name : old_torneio.name,
-        date_start : old_torneio.date_start,
-        type : type,
-        status : old_torneio.status,
+      torneio: {
+        inscritos: subcribe.length,
+        usuarioId: old_torneio.usuarioId,
+        torneioId: old_torneio.id,
+        name: old_torneio.name,
+        date_start: old_torneio.date_start,
+        type: type,
+        status: old_torneio.status,
       },
       PartidasUser,
-    }
+    };
     res.status(200).json({
-      data : data,
+      data: data,
     });
   } catch (error) {
     res.status(500).json({
       status: false,
       error: error.message,
-      msg : "Erro ao gerar partidas",
+      msg: "Erro ao gerar partidas",
     });
   }
 };
@@ -854,12 +876,12 @@ exports.select_winner = async (req, res) => {
         return {
           winner: partida.winner || "0",
           jogador1: {
-            usuarioId : jogador1.id,
+            usuarioId: jogador1.id,
             username: jogador1.username,
             countryImg: await getCountry(jogador1.country),
           },
           jogador2: {
-            usuarioId : jogador2.id,
+            usuarioId: jogador2.id,
             username: jogador2.username,
             countryImg: await getCountry(jogador2.country),
           },
@@ -906,12 +928,28 @@ exports.select_winner = async (req, res) => {
 
     // ranking individual do usuário
     const filteredRanking = await aux.ft_ranking(user.id, res, req);
-
+    if (type === "allvsall") {
+      type = "Todos vs Todos";
+    } else type = "Eliminatória";
+    data = {
+      status: true,
+      msg: "Todas partidas do torneio",
+      torneio: {
+        inscritos: subcribe.length,
+        usuarioId: old_torneio.usuarioId,
+        torneioId: old_torneio.id,
+        name: old_torneio.name,
+        date_start: old_torneio.date_start,
+        type: type,
+        status: old_torneio.status,
+      },
+      PartidasUser,
+    };
     //onst io = req.app.get("socketio");
-     io.emit("select_winner", PartidasUser);
-     io.emit("top_users", topUsers);
-     io.emit("ranking_individual", filteredRanking);
-     io.emit("ranking_torneio", ranking_data);
+    io.emit("partidas_geradas", PartidasUser);
+    io.emit("top_users", topUsers);
+    io.emit("ranking_individual", filteredRanking);
+    io.emit("ranking_torneio", ranking_data);
     return res.status(200).json({
       status: true,
       msg: "Vencedor atualizado com sucesso",
@@ -923,7 +961,7 @@ exports.select_winner = async (req, res) => {
       error: [
         {
           msg: "Erro ao selecionar o vencedor",
-          error : error.message,
+          error: error.message,
         },
       ],
     });
@@ -1089,7 +1127,6 @@ exports.outTorneio = async (req, res) => {
       where: {
         usuarioId: userId,
         torneioId,
-        
       },
     });
     const subscribed = await user_toneio.findAll({
@@ -1172,7 +1209,7 @@ exports.rankings = async (req, res) => {
   }
 };
 
-exports.rank_partida = async (req, res) =>{
+exports.rank_partida = async (req, res) => {
   try {
     const torneioId = req.params.torneioId;
     const filteredRanking = await aux.ft_rank_partida(torneioId, res, req);
@@ -1189,7 +1226,7 @@ exports.rank_partida = async (req, res) =>{
       error: error.message,
     });
   }
-}
+};
 
 exports.torneiosUsuario = async (req, res) => {
   try {
