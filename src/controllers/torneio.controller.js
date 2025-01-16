@@ -1284,10 +1284,15 @@ exports.rank_partida = async (req, res) => {
   try {
     const torneioId = req.params.torneioId;
     const filteredRanking = await aux.ft_rank_partida(torneioId, res, req);
-    return res.status(200).json({
+    const data = {
       status: true,
       msg: "Ranking do Torneio",
-      data: filteredRanking,
+      rank : filteredRanking,
+    }
+    const io = req.app.get("socketio");
+    io.emit("rank_torneio", data);
+    return res.status(200).json({
+      data,
     });
   } catch (error) {
     console.error(error);
