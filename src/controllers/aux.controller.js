@@ -112,7 +112,7 @@ async function ft_rank_partida(torneioId, res, req) {
         usuario: {
           usuarioId: user.id,
           username: user.username,
-          bandeira: await getCountry(user.country),
+          countryImg: await getCountry(user.country),
           pontos: list.pontos,
         },
       };
