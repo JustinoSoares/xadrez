@@ -921,10 +921,7 @@ exports.select_winner = async (req, res) => {
 
     // find o confronto
     const vencedor = await vs.findAll({
-      where: {
-        torneioId,
-        winner: user.username,
-      },
+      where: { torneioId: torneioId },
     });
     //pegar o usuername dos jogadores
     const PartidasUser = await Promise.all(
