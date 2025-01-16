@@ -268,6 +268,13 @@ exports.subcribeTorneio = async (req, res) => {
         msg: "Dados inválidos",
       });
     }
+    if (torneio.status !== "open") {
+      return res.status(400).json({
+        status: false,
+        msg: "Impossível, torneio encerrado!",
+      });
+    }
+
     const usuario = await Usuario.findByPk(usuarioId);
     if (!usuario) {
       return res.status(404).json({
@@ -397,12 +404,13 @@ exports.AllvsAll = async (req, res) => {
     const torneio = await Torneio.findByPk(torneioId);
 
     const primary_torneio = await Torneio.findAll({
-      where: { id: torneioId },
+      where: { id: torneioId, status: "open" },
+      limit: 1,
     });
     if (!primary_torneio) {
       return res.status(400).json({
         status: false,
-        msg: "Torneio não encontrado!",
+        msg: "Torneio não encontrado ou já encerrado",
       });
     }
 
@@ -503,11 +511,6 @@ exports.AllvsAll = async (req, res) => {
         torneioId,
       },
     });
-    let type = primary_torneio.type;
-    if (type === "allvsall") {
-      type = "Todos vs Todos";
-    } else type = "Eliminatória";
-
     data = {
       status: true,
       msg: "Todas partidas do torneio",
@@ -517,7 +520,7 @@ exports.AllvsAll = async (req, res) => {
         torneioId: primary_torneio.id,
         name: primary_torneio.name,
         date_start: primary_torneio.date_start,
-        type: type,
+        type: "Todos vs Todos",
         status: primary_torneio.status,
       },
       PartidasUser,
@@ -544,15 +547,29 @@ exports.eliminatoria = async (req, res) => {
   try {
     const torneioId = req.params.torneioId;
     const usuarioId = req.userId;
-    const torneio = await Torneio.findByPk(torneioId);
+    const torneio = await Torneio.findByPk(torneioId,{
+      where: {
+        id: torneioId,
+        status: "open",
+      },
+      limit : 1,
+    });
 
-    if (torneio.type !== "eliminatoria") {
+  
+    if (!torneio) {
+      return res.status(404).json({
+        status: false,
+        msg: "Torneio não encontrado ou já encerrado",
+      });
+    }
+   
+    if (torneio.type != "eliminatoria") {
       return res.status(400).json({
         status: false,
         msg: "Tipo de torneio inválido, tente outro tipo",
       });
     }
-
+  
     if (usuarioId !== torneio.usuarioId) {
       return res.status(403).json({
         status: false,
@@ -563,6 +580,7 @@ exports.eliminatoria = async (req, res) => {
         ],
       });
     }
+   
     if (!torneio || torneio.status != "open") {
       return res.status(404).json({
         status: false,
@@ -576,14 +594,31 @@ exports.eliminatoria = async (req, res) => {
       },
     });
 
+
+    if (jogadoresInscritos.length % 2 !== 0) {
+      return res.status(400).json({
+        status: false,
+        msg: "Número de jogadores inscritos deve ser par",
+      });
+    }
+
     if (jogadoresInscritos.length < 1) {
       return res.status(404).json({
         status: false,
         msg: "O número de jogadores inscritos é insuficiente",
       });
     }
+   
     for (let i = 0; i < jogadoresInscritos.length; i++) {
       if (i % 2 === 0) {
+        const existe = await vs.findAll({
+          where: {
+            jogador1Id: jogadoresInscritos[i].usuarioId,
+            jogador2Id: jogadoresInscritos[i + 1].usuarioId,
+            torneioId: torneioId,
+          },
+        });
+        if (existe.length > 0) continue;
         const partidas = vs.create({
           jogador1Id: jogadoresInscritos[i].usuarioId,
           jogador2Id: jogadoresInscritos[i + 1].usuarioId,
@@ -603,22 +638,41 @@ exports.eliminatoria = async (req, res) => {
         return {
           winner: partida.winner || "0",
           jogador1: {
+            usuarioId: jogador1.id,
             username: jogador1.username,
             countryImg: await getCountry(jogador1.country),
           },
           jogador2: {
+            usuarioId: jogador2.id,
             username: jogador2.username,
             countryImg: await getCountry(jogador2.country),
           },
         };
       })
     );
-    const io = req.app.get("sockeio");
-    io.emit("partidas_geradas", PartidasUser);
-    res.status(200).json({
+    const subcribe = await user_toneio.findAll({
+      where: {
+        torneioId,
+      },
+    });
+    const data = {
       status: true,
-      msg: "Partidas geradas com sucesso",
-      //data: PartidasUser,
+      msg: "Todas partidas do torneio",
+      torneio: {
+        inscritos: subcribe.length,
+        usuarioId: torneio.usuarioId,
+        torneioId: torneio.id,
+        name: torneio.name,
+        date_start: torneio.date_start,
+        type: "Eliminatória",
+        status: torneio.status,
+      },
+      PartidasUser, 
+    }
+    const io = req.app.get("socketio");
+    io.emit("partidas_geradas", data);
+    res.status(200).json({
+      data: data,
     });
   } catch (error) {
     res.status(500).json({
