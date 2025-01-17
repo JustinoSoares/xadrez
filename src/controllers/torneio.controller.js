@@ -525,7 +525,7 @@ exports.AllvsAll = async (req, res) => {
         type: "Todos vs Todos",
         status: primary_torneio.status,
       },
-      PartidasUser : PartidasUser.sort((a, b) => a.vsId - b.vsId),
+      PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
     };
     //
     const io = req.app.get("socketio");
@@ -671,7 +671,7 @@ exports.eliminatoria = async (req, res) => {
         type: "Eliminatória",
         status: torneio.status,
       },
-      PartidasUser : PartidasUser.sort((a, b) => a.vsId - b.vsId),
+      PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
     };
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
@@ -779,7 +779,7 @@ exports.partida = async (req, res) => {
         type: type,
         status: old_torneio.status,
       },
-      PartidasUser : PartidasUser.sort((a, b) => a.vsId - b.vsId),
+      PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
     };
     res.status(200).json({
       data: data,
@@ -986,9 +986,12 @@ exports.select_winner = async (req, res) => {
       ranking_torneio.map(async (user) => {
         const usuario = await Usuario.findByPk(user.usuarioId);
         return {
-          username: usuario.username,
-          countryImg: await getCountry(user.country),
-          pontos: user.pontos,
+          usuario: {
+            usuarioId: user.id,
+            username: usuario.username,
+            countryImg: await getCountry(user.country),
+            pontos: user.pontos,
+          },
         };
       })
     );
@@ -997,8 +1000,7 @@ exports.select_winner = async (req, res) => {
         torneioId,
       },
     });
- 
-  
+
     // ranking individual do usuário
     const filteredRanking = await aux.ft_ranking(user.id, res, req);
     if (type === "allvsall") {
@@ -1016,13 +1018,13 @@ exports.select_winner = async (req, res) => {
         type: type,
         status: torneios.status,
       },
-      PartidasUser : PartidasUser.sort((a, b) => a.vsId - b.vsId),
+      PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
     };
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
     io.emit("top_users", topUsers);
     io.emit("ranking_individual", filteredRanking);
-    io.emit("ranking_torneio", ranking_data);
+    io.emit("rank_torneio", ranking_data);
     return res.status(200).json({
       data,
     });
@@ -1287,8 +1289,8 @@ exports.rank_partida = async (req, res) => {
     const data = {
       status: true,
       msg: "Ranking do Torneio",
-      rank : filteredRanking,
-    }
+      rank: filteredRanking,
+    };
     const io = req.app.get("socketio");
     io.emit("rank_torneio", data);
     return res.status(200).json({
