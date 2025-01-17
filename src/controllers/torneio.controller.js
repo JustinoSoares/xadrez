@@ -998,7 +998,7 @@ exports.select_winner = async (req, res) => {
       })
     );
   
-    const new_rank = ranking_data.filter((user) => user.pontos > 0);
+    const new_rank = ranking_data.filter((user) => user.usuario.pontos > 0);
     const subcribe = await user_toneio.findAll({
       where: {
         torneioId,
