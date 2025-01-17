@@ -983,20 +983,22 @@ exports.select_winner = async (req, res) => {
       order: [["pontos", "DESC"]],
     });
     const ranking_data = await Promise.all(
-      bandeira = await getCountry(user.country),
       ranking_torneio.map(async (user) => {
         const usuario = await Usuario.findByPk(user.usuarioId);
+        bandeira = await getCountry(usuario.country);
+        if (!usuario) return null;
         return {
           usuario: {
-            usuarioId: user.id,
+            usuarioId: usuario.id,
             username: usuario.username,
             countryImg: bandeira,
-            pontos: user.pontos,
+            pontos: usuario.pontos,
           },
         };
       })
     );
-    ranking_data.filter((user) => user.usuario.pontos > 0);
+  
+    const new_rank = ranking_data.filter((user) => user.pontos > 0);
     const subcribe = await user_toneio.findAll({
       where: {
         torneioId,
@@ -1026,7 +1028,7 @@ exports.select_winner = async (req, res) => {
     io.emit("partidas_geradas", data);
     io.emit("top_users", topUsers);
     io.emit("ranking_individual", filteredRanking);
-    io.emit("rank_torneio", ranking_data);
+    io.emit("rank_torneio", new_rank);
     return res.status(200).json({
       data,
     });
