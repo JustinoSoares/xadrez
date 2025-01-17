@@ -992,7 +992,7 @@ exports.select_winner = async (req, res) => {
             usuarioId: usuario.id,
             username: usuario.username,
             countryImg: bandeira,
-            pontos: usuario.pontos,
+            pontos: user.pontos,
           },
         };
       })
