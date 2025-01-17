@@ -983,18 +983,20 @@ exports.select_winner = async (req, res) => {
       order: [["pontos", "DESC"]],
     });
     const ranking_data = await Promise.all(
+      bandeira = await getCountry(user.country),
       ranking_torneio.map(async (user) => {
         const usuario = await Usuario.findByPk(user.usuarioId);
         return {
           usuario: {
             usuarioId: user.id,
             username: usuario.username,
-            countryImg: await getCountry(user.country),
+            countryImg: bandeira,
             pontos: user.pontos,
           },
         };
       })
     );
+    ranking_data.filter((user) => user.usuario.pontos > 0);
     const subcribe = await user_toneio.findAll({
       where: {
         torneioId,
