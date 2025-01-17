@@ -955,6 +955,21 @@ exports.select_winner = async (req, res) => {
       })
     );
 
+    if (PartidasUser.length >= 1) {
+      if (
+        !(PartidasUser.filter((partida) => partida.winner === "0").length > 0)
+      ) {
+        await Torneio.update(
+          { status: "closed" },
+          {
+            where: {
+              id: torneioId,
+            },
+          }
+        );
+      }
+    }
+
     // Verificar o top de usuários dentro de um torneio
     const top = await user_toneio.findAll({
       where: {
@@ -997,7 +1012,7 @@ exports.select_winner = async (req, res) => {
         };
       })
     );
-  
+
     const new_rank = ranking_data.filter((user) => user.usuario.pontos > 0);
     const subcribe = await user_toneio.findAll({
       where: {
@@ -1024,6 +1039,7 @@ exports.select_winner = async (req, res) => {
       },
       PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
     };
+
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
     io.emit("top_users", topUsers);
