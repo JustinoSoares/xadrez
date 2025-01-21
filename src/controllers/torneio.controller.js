@@ -159,7 +159,18 @@ exports.getTorneios = async (req, res) => {
     const offset = req.query.offset || 0;
     const order = req.query.order || "DESC";
     const attribute = req.query.attribute || "createdAt";
-    const len_torneio = await Torneio.count();
+    const len_torneio = await Torneio.count({
+      where: {
+        [Op.or]: [
+          {
+            name: {
+              [db.Sequelize.Op.iLike]: `%${search}%`,
+            },
+          },
+        ],
+        status: status && status !== "all" ? status : { [Op.not]: "current" },
+      },
+    });
 
     const torneios = await Torneio.findAll({
       where: {
