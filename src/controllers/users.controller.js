@@ -111,6 +111,11 @@ exports.getUsuarios = async (req, res) => {
     const offset = req.query.offset || 0;
     const search = req.query.search || "";
     const attribute = req.query.attribute || "id";
+    const len_users = await Usuario.count({
+      where: {
+        tipo_usuario: "normal",
+      },
+    });
 
     const usuarios = await Usuario.findAll({
       attributes: [
@@ -165,6 +170,7 @@ exports.getUsuarios = async (req, res) => {
     return res.status(200).json({
       status: true,
       msg: "Usuários encontrados",
+      len_users,
       data,
     });
   } catch (error) {

@@ -157,6 +157,14 @@ exports.getTorneios = async (req, res) => {
     const offset = req.query.offset || 0;
     const order = req.query.order || "DESC";
     const attribute = req.query.attribute || "createdAt";
+    const len_torneio = await Torneio.count({
+      where: {
+        name: {
+          [db.Sequelize.Op.iLike]: `%${search}%`,
+        },
+      },
+    });
+
     const torneios = await Torneio.findAll({
       where: {
         name: {
@@ -216,6 +224,7 @@ exports.getTorneios = async (req, res) => {
           type = "Todos vs Todos";
         } else type = "Eliminatória";
         return {
+          len_torneio: len_torneio,
           inscritos: subscribed.length,
           torneio: {
             id: torneio.id,
@@ -1286,6 +1295,13 @@ exports.outTorneio = async (req, res) => {
 exports.rankings = async (req, res) => {
   try {
     const usuarioId = req.params.usuarioId;
+    const user = await Usuario.findByPk(usuarioId);
+    if (!user) {
+      return res.status(404).json({
+        status: false,
+        msg: "Usuário não encontrado",
+      });
+    }
     const filteredRanking = await aux.ft_ranking(usuarioId, res, req);
     return res.status(200).json({
       status: true,
