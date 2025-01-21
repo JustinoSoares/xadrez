@@ -9,6 +9,7 @@ const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const axios = require("axios");
 const aux = require("./aux.controller");
+const { Op } = require("sequelize");
 
 async function getCountry(country) {
   try {
@@ -152,24 +153,24 @@ exports.getTorneioById = async (req, res) => {
 exports.getTorneios = async (req, res) => {
   try {
     const search = req.query.search || "";
+    const status = req.query.status || "";
     const userId = req.userId;
     const maxLen = req.query.maxLen || 10;
     const offset = req.query.offset || 0;
     const order = req.query.order || "DESC";
     const attribute = req.query.attribute || "createdAt";
-    const len_torneio = await Torneio.count({
-      where: {
-        name: {
-          [db.Sequelize.Op.iLike]: `%${search}%`,
-        },
-      },
-    });
+    const len_torneio = await Torneio.count();
 
     const torneios = await Torneio.findAll({
       where: {
-        name: {
-          [db.Sequelize.Op.iLike]: `%${search}%`,
-        },
+        [Op.or]: [
+          {
+            name: {
+              [db.Sequelize.Op.iLike]: `%${search}%`,
+            },
+          },
+        ],
+        status: status && status !== "all" ? status : { [Op.not]: "current" },
       },
       limit: maxLen,
       offset: offset,
@@ -224,7 +225,6 @@ exports.getTorneios = async (req, res) => {
           type = "Todos vs Todos";
         } else type = "Eliminatória";
         return {
-          len_torneio: len_torneio,
           inscritos: subscribed.length,
           torneio: {
             id: torneio.id,
@@ -250,6 +250,7 @@ exports.getTorneios = async (req, res) => {
     res.status(200).json({
       status: true,
       msg: "Todos torneios",
+      len_torneio: len_torneio,
       data: userSubscribed,
     });
   } catch (error) {
