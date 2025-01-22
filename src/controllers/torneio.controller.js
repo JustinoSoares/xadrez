@@ -153,14 +153,14 @@ exports.getTorneioById = async (req, res) => {
 exports.getTorneios = async (req, res) => {
   try {
     const search = req.query.search || "";
-    const status = req.query.status || "";
+    const status = req.query.status || null;
     const userId = req.userId;
     const maxLen = req.query.maxLen || 10;
     const offset = req.query.offset || 0;
     const order = req.query.order || "DESC";
     const attribute = req.query.attribute || "createdAt";
-    const len_torneio = await Torneio.count({
-      where: {
+
+    const whereConditional = {
         [Op.or]: [
           {
             name: {
@@ -168,21 +168,20 @@ exports.getTorneios = async (req, res) => {
             },
           },
         ],
-        status: status && status !== "all" ? status : { [Op.not]: "current" },
-      },
+    }
+
+    if (status)
+    {
+
+      whereConditional.status = status;
+    }
+
+    const len_torneio = await Torneio.count({
+      where: whereConditional,
     });
 
     const torneios = await Torneio.findAll({
-      where: {
-        [Op.or]: [
-          {
-            name: {
-              [db.Sequelize.Op.iLike]: `%${search}%`,
-            },
-          },
-        ],
-        status: status && status !== "all" ? status : { [Op.not]: "current" },
-      },
+      where: whereConditional,
       limit: maxLen,
       offset: offset,
       order: [[attribute, order]],
