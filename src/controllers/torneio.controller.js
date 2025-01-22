@@ -1356,10 +1356,16 @@ exports.rank_partida = async (req, res) => {
 exports.torneiosUsuario = async (req, res) => {
   try {
     const usuarioId = req.params.usuarioId;
+    const status = req.query.status || null;
+
+    const whereConditional = {
+      usuarioId: usuarioId,
+    }
+    if (status) {
+      whereConditional.status = status;
+    }
     const torneios = await Torneio.findAll({
-      where: {
-        usuarioId: usuarioId,
-      },
+      where: whereConditional,
     });
     const data = await Promise.all(
       torneios.map(async (torneio) => {
