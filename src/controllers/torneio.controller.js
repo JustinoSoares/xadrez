@@ -169,13 +169,10 @@ exports.getTorneios = async (req, res) => {
           },
         ],
     }
-
     if (status)
     {
-
       whereConditional.status = status;
     }
-
     const len_torneio = await Torneio.count({
       where: whereConditional,
     });
@@ -462,13 +459,6 @@ exports.AllvsAll = async (req, res) => {
       return res.status(404).json({
         status: false,
         msg: "O número de jogadores inscritos é insuficiente",
-      });
-    }
-
-    if (jogadoresInscritos.length % 2 !== 0) {
-      return res.status(400).json({
-        status: false,
-        msg: "Número de jogadores inscritos deve ser par",
       });
     }
     let partidasGeradas = [];
