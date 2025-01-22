@@ -9,7 +9,7 @@ const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const axios = require("axios");
 const aux = require("./aux.controller");
-const { Op } = require("sequelize");
+const { Op, or } = require("sequelize");
 
 async function getCountry(country) {
   try {
@@ -1346,6 +1346,8 @@ exports.rank_partida = async (req, res) => {
 exports.torneiosUsuario = async (req, res) => {
   try {
     const usuarioId = req.params.usuarioId;
+    const attribute = req.query.attribute || "createdAt";
+    const order = req.query.order || "DESC";
     const status = req.query.status || null;
 
     const whereConditional = {
@@ -1356,6 +1358,7 @@ exports.torneiosUsuario = async (req, res) => {
     }
     const torneios = await Torneio.findAll({
       where: whereConditional,
+      order: [[attribute, order]],
     });
     const data = await Promise.all(
       torneios.map(async (torneio) => {
