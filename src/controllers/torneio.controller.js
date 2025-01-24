@@ -591,13 +591,6 @@ exports.eliminatoria = async (req, res) => {
         ],
       });
     }
-
-    if (!torneio || torneio.status != "open") {
-      return res.status(404).json({
-        status: false,
-        msg: "Torneio encerrado ou não encontrado",
-      });
-    }
     const jogadoresInscritos = await user_toneio.findAll({
       where: {
         torneioId: torneioId,
