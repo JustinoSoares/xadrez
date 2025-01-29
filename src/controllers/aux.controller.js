@@ -56,6 +56,7 @@ async function ft_ranking(usuarioId, res, req) {
           const user = ranking_for_each_user[userRanking];
           return {
             torneio: each_torneio.name, // Supondo que Torneio tenha o atributo 'name'
+            status: each_torneio.status,
             pos: userRanking + 1,
             pontos: user.pontos,
           };
