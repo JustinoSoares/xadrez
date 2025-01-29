@@ -4,6 +4,7 @@ const { Router } = require('express');
 const torneioController = require('../controllers/torneio.controller');
 const validateTorneio = require('../validator/torneio.validate');
 const authorization = require('../middleware/authorization');
+const allvsallController = require('../controllers/allvsall.controllers');
 const { route } = require('./user.router');
 
 const router = Router();
@@ -20,7 +21,7 @@ router.get('/torneios/all', authorization, torneioController.getTorneios);
 router.post('/torneios/subscribe/:torneioId', authorization, torneioController.subcribeTorneio);
 
 //Jogar todos contra todos
-router.post('/torneios/AllvsAll/:torneioId', authorization, torneioController.AllvsAll);
+router.post('/torneios/AllvsAll/:torneioId', authorization, allvsallController.AllvsAll);
 // Jogar eliminatória
 router.post('/torneios/eliminatoria/:torneioId', authorization, torneioController.eliminatoria);
 

@@ -47,6 +47,11 @@ module.exports = {
         allowNull: true,
         defaultValue: null,
       },
+      rodada : {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE,

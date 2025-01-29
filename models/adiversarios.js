@@ -61,6 +61,11 @@ module.exports = (sequelize) => {
         allowNull: true,
         defaultValue: null,
       },
+      rodada: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        defaultValue: 1,
+      },
     },
     {
       sequelize,

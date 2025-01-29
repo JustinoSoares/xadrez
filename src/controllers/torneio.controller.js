@@ -161,16 +161,15 @@ exports.getTorneios = async (req, res) => {
     const attribute = req.query.attribute || "createdAt";
 
     const whereConditional = {
-        [Op.or]: [
-          {
-            name: {
-              [db.Sequelize.Op.iLike]: `%${search}%`,
-            },
+      [Op.or]: [
+        {
+          name: {
+            [db.Sequelize.Op.iLike]: `%${search}%`,
           },
-        ],
-    }
-    if (status)
-    {
+        },
+      ],
+    };
+    if (status) {
       whereConditional.status = status;
     }
     const len_torneio = await Torneio.count({
@@ -464,12 +463,17 @@ exports.eliminatoria = async (req, res) => {
     }
 
     if (jogadoresInscritos.length < 1) {
-      return res.status(404).json({
+      return res.status(400).json({
         status: false,
         msg: "O número de jogadores inscritos é insuficiente",
       });
     }
-
+    const last_partidas = await vs.findAll({
+      where: { torneioId: torneioId },
+      order: [["createdAt", "DESC"]],
+      limit: 1,
+    });
+    let rodada = last_partidas.rodada == 1 ? 1 : last_partidas.rodada + 1;
     for (let i = 0; i < jogadoresInscritos.length; i++) {
       if (i % 2 === 0) {
         const existe = await vs.findAll({
@@ -480,13 +484,15 @@ exports.eliminatoria = async (req, res) => {
           },
         });
         if (existe.length > 0) continue;
-        const partidas = vs.create({
+        await vs.create({
           jogador1Id: jogadoresInscritos[i].usuarioId,
           jogador2Id: jogadoresInscritos[i + 1].usuarioId,
           torneioId: torneioId,
+          rodada: rodada,
         });
       }
     }
+
     const this_partidas = await vs.findAll({
       where: { torneioId: torneioId },
       order: [["id", "ASC"]],
@@ -502,6 +508,7 @@ exports.eliminatoria = async (req, res) => {
         return {
           vsId: partida.id,
           winner: partida.winner || "0",
+          rodada: partida.rodada,
           jogador1: {
             usuarioId: jogador1.id,
             username: jogador1.username,
@@ -520,6 +527,7 @@ exports.eliminatoria = async (req, res) => {
         torneioId,
       },
     });
+
     const data = {
       status: true,
       msg: "Todas partidas do torneio",
@@ -532,7 +540,7 @@ exports.eliminatoria = async (req, res) => {
         type: "Eliminatória",
         status: torneio.status,
       },
-      PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
+      PartidasUser: PartidasUser,
     };
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
@@ -606,6 +614,7 @@ exports.partida = async (req, res) => {
         return {
           vsId: partida.id,
           winner: partida.winner || "0",
+          rodada: partida.rodada,
           jogador1: {
             usuarioId: jogador1.id,
             username: jogador1.username,
@@ -628,6 +637,19 @@ exports.partida = async (req, res) => {
     if (type === "allvsall") {
       type = "Todos vs Todos";
     } else type = "Eliminatória";
+
+    const agruparPorRodada = (partidas) => {
+      const agrupadas = partidas.reduce((resultado, partida) => {
+        if (!resultado[partida.rodada]) {
+          resultado[partida.rodada] = [];
+        }
+        resultado[partida.rodada].push(partida);
+        return resultado;
+      }, {});
+
+      return Object.values(agrupadas); // Retorna apenas o array de rodadas
+    };
+
     data = {
       status: true,
       msg: "Todas partidas do torneio",
@@ -640,7 +662,8 @@ exports.partida = async (req, res) => {
         type: type,
         status: old_torneio.status,
       },
-      PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
+      PartidasUser: agruparPorRodada(PartidasUser),
+      //PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
     };
     res.status(200).json({
       data: data,
@@ -1203,7 +1226,7 @@ exports.torneiosUsuario = async (req, res) => {
 
     const whereConditional = {
       usuarioId: usuarioId,
-    }
+    };
     if (status) {
       whereConditional.status = status;
     }
