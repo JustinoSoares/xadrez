@@ -1,12 +1,8 @@
 const db = require("../../models"); // Ajuste o caminho conforme necessário
 const Torneio = db.Torneio; // Ajuste o caminho conforme necessário
 const Usuario = db.Usuario; // Ajuste o caminho conforme necessário
-const user_toneio = db.UsuarioTorneio; // Ajuste o caminho conforme necessário
-const vs = db.Adversarios;
-const bcrypt = require("bcrypt");
-const { validationResult } = require("express-validator");
+const user_toneio = db.UsuarioTorneio; // Ajuste o caminho conforme necessários;
 const axios = require("axios");
-const { where } = require("sequelize");
 
 async function getCountry(country) {
   try {
