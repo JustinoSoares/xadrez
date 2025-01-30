@@ -861,15 +861,12 @@ exports.select_winner = async (req, res) => {
     const verifyElim = await user_toneio.findAll({
       where: {
         torneioId,
+        status: "on",
       },
     });
     if (PartidasUser.length >= 1 && type === "eliminatoria") {
-      if (
-        !(
-          verifyElim.filter((verifyElim) => verifyElim.status === "off")
-            .length > 0
-        )
-      ) {
+      if (verifyElim.length === 1 || verifyElim.length === 0)
+        {
         await Torneio.update(
           { status: "closed" },
           {
