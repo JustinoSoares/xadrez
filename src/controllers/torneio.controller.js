@@ -454,13 +454,6 @@ exports.eliminatoria = async (req, res) => {
       },
     });
 
-    // if (jogadoresInscritos.length % 2 !== 0) {
-    //   return res.status(400).json({
-    //     status: false,
-    //     msg: "Número de jogadores inscritos deve ser par",
-    //   });
-    // }
-
     if (jogadoresInscritos.length < 1) {
       return res.status(400).json({
         status: false,
@@ -798,7 +791,6 @@ exports.select_winner = async (req, res) => {
     if (type === "eliminatoria") {
       const partida = await vs.findByPk(vsId);
       if (partida.jogador1Id != user.id) {
-        const new_torneio = await Torneio.findByPk(torneioId);
         await user_toneio.update(
           {
             status: "off",
@@ -873,7 +865,10 @@ exports.select_winner = async (req, res) => {
     });
     if (PartidasUser.length >= 1 && type === "eliminatoria") {
       if (
-        !(verifyElim.filter((verifyElim) => verifyElim.status === "off").length > 0)
+        !(
+          verifyElim.filter((verifyElim) => verifyElim.status === "off")
+            .length > 0
+        )
       ) {
         await Torneio.update(
           { status: "closed" },
@@ -882,6 +877,12 @@ exports.select_winner = async (req, res) => {
               id: torneioId,
             },
           }
+        );
+      } else {
+        // fechar o torneio depois de gerar as partidas
+        await Torneio.update(
+          { status: "current" },
+          { where: { id: torneioId } }
         );
       }
     }

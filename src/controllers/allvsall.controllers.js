@@ -3,12 +3,7 @@ const Torneio = db.Torneio; // Ajuste o caminho conforme necessário
 const Usuario = db.Usuario; // Ajuste o caminho conforme necessário
 const user_toneio = db.UsuarioTorneio; // Ajuste o caminho conforme necessário
 const vs = db.Adversarios;
-const bcrypt = require("bcrypt");
-const { validationResult } = require("express-validator");
 const axios = require("axios");
-const aux = require("./aux.controller");
-const { Op, or } = require("sequelize");
-const { partida } = require("./torneio.controller");
 
 async function getCountry(country) {
     try {
