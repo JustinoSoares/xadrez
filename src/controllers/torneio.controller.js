@@ -472,9 +472,10 @@ exports.eliminatoria = async (req, res) => {
       order: [["rodada", "DESC"]],
       limit: 1,
     });
-    let rodada = last_partidas[0].rodada + 1;
-  
-
+    let rodada = 1;
+    if (last_partidas.length) {
+      rodada = last_partidas[0].rodada + 1;
+    }
     for (let i = 0; i < jogadoresInscritos.length; i++) {
       if (i % 2 === 0) {
         const existe = await vs.findAll({
