@@ -415,15 +415,9 @@ exports.eliminatoria = async (req, res) => {
   try {
     const torneioId = req.params.torneioId;
     const usuarioId = req.userId;
-    const torneio = await Torneio.findByPk(torneioId, {
-      where: {
-        id: torneioId,
-        status: "open",
-      },
-      limit: 1,
-    });
+    const torneio = await Torneio.findByPk(torneioId);
 
-    if (!torneio) {
+    if (!torneio || torneio.status === "closed") {
       return res.status(404).json({
         status: false,
         msg: "Torneio não encontrado ou já encerrado",
@@ -469,6 +463,8 @@ exports.eliminatoria = async (req, res) => {
     if (last_partidas.length) {
       rodada = last_partidas[0].rodada + 1;
     }
+    // fechar o torneio depois de gerar as partidas
+    await Torneio.update({ status: "current" }, { where: { id: torneioId } });
     for (let i = 0; i < jogadoresInscritos.length; i++) {
       if (i % 2 === 0) {
         const existe = await vs.findAll({
@@ -534,19 +530,19 @@ exports.eliminatoria = async (req, res) => {
         torneioId,
       },
     });
-    // fechar o torneio depois de gerar as partidas
-    await Torneio.update({ status: "current" }, { where: { id: torneioId } });
+
+    const now_torneio = await Torneio.findByPk(torneioId);
     const data = {
       status: true,
       msg: "Todas partidas do torneio",
       torneio: {
         inscritos: subcribe.length,
-        usuarioId: torneio.usuarioId,
-        torneioId: torneio.id,
-        name: torneio.name,
-        date_start: torneio.date_start,
+        usuarioId: now_torneio.usuarioId,
+        torneioId: now_torneio.id,
+        name: now_torneio.name,
+        date_start: now_torneio.date_start,
         type: "Eliminatória",
-        status: torneio.status,
+        status: now_torneio.status,
       },
       PartidasUser: agruparPorRodada(PartidasUser),
     };
