@@ -811,7 +811,6 @@ exports.select_winner = async (req, res) => {
           }
         );
       } else {
-        const new_torneio = await Torneio.findByPk(torneioId);
         await user_toneio.update(
           {
             status: "off",
@@ -853,9 +852,28 @@ exports.select_winner = async (req, res) => {
       })
     );
 
-    if (PartidasUser.length >= 1) {
+    if (PartidasUser.length >= 1 && type === "allvsall") {
       if (
         !(PartidasUser.filter((partida) => partida.winner === "0").length > 0)
+      ) {
+        await Torneio.update(
+          { status: "closed" },
+          {
+            where: {
+              id: torneioId,
+            },
+          }
+        );
+      }
+    }
+    const verifyElim = await user_toneio.findAll({
+      where: {
+        torneioId,
+      },
+    });
+    if (PartidasUser.length >= 1 && type === "eliminatoria") {
+      if (
+        !(verifyElim.filter((verifyElim) => verifyElim.status === "off").length > 0)
       ) {
         await Torneio.update(
           { status: "closed" },
