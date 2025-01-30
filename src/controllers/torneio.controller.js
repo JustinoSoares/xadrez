@@ -828,6 +828,7 @@ exports.select_winner = async (req, res) => {
         return {
           vsId: partida.id,
           winner: partida.winner || "0",
+          rodada : partida.rodada,
           jogador1: {
             usuarioId: jogador1.id,
             username: jogador1.username,
