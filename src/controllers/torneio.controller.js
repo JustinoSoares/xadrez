@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const axios = require("axios");
 const aux = require("./aux.controller");
-const { Op, or } = require("sequelize");
+const { Op, or, where } = require("sequelize");
 
 async function getCountry(country) {
   try {
@@ -469,10 +469,12 @@ exports.eliminatoria = async (req, res) => {
     }
     const last_partidas = await vs.findAll({
       where: { torneioId: torneioId },
-      order: [["createdAt", "DESC"]],
+      order: [["rodada", "DESC"]],
       limit: 1,
     });
-    let rodada = last_partidas.rodada == 1 ? 1 : last_partidas.rodada + 1;
+    let rodada = last_partidas[0].rodada + 1;
+  
+
     for (let i = 0; i < jogadoresInscritos.length; i++) {
       if (i % 2 === 0) {
         const existe = await vs.findAll({
@@ -496,6 +498,18 @@ exports.eliminatoria = async (req, res) => {
       where: { torneioId: torneioId },
       order: [["id", "ASC"]],
     });
+
+    const agruparPorRodada = (partidas) => {
+      const agrupadas = partidas.reduce((resultado, partida) => {
+        if (!resultado[partida.rodada]) {
+          resultado[partida.rodada] = [];
+        }
+        resultado[partida.rodada].push(partida);
+        return resultado;
+      }, {});
+
+      return Object.values(agrupadas); // Retorna apenas o array de rodadas
+    };
 
     //pegar o usuername dos jogadores
     const PartidasUser = await Promise.all(
@@ -539,7 +553,7 @@ exports.eliminatoria = async (req, res) => {
         type: "Eliminatória",
         status: torneio.status,
       },
-      PartidasUser: PartidasUser,
+      PartidasUser: agruparPorRodada(PartidasUser),
     };
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
