@@ -925,7 +925,17 @@ exports.select_winner = async (req, res) => {
       },
     });
     const now_torneio = await Torneio.findByPk(torneioId);
+    const agruparPorRodada = (partidas) => {
+      const agrupadas = partidas.reduce((resultado, partida) => {
+        if (!resultado[partida.rodada]) {
+          resultado[partida.rodada] = [];
+        }
+        resultado[partida.rodada].push(partida);
+        return resultado;
+      }, {});
 
+      return Object.values(agrupadas); // Retorna apenas o array de rodadas
+    };
     // ranking individual do usuário
     const filteredRanking = await aux.ft_ranking(user.id, res, req);
     if (type === "allvsall") {
@@ -943,7 +953,7 @@ exports.select_winner = async (req, res) => {
         type: type,
         status: now_torneio.status,
       },
-      PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
+      PartidasUser: agruparPorRodada(PartidasUser),
     };
 
     const io = req.app.get("socketio");

@@ -50,6 +50,18 @@ async function PartidasGeradas(torneioId) {
     },
   });
 
+  const agruparPorRodada = (partidas) => {
+    const agrupadas = partidas.reduce((resultado, partida) => {
+      if (!resultado[partida.rodada]) {
+        resultado[partida.rodada] = [];
+      }
+      resultado[partida.rodada].push(partida);
+      return resultado;
+    }, {});
+
+    return Object.values(agrupadas); // Retorna apenas o array de rodadas
+  };
+
   const now_torneio = await Torneio.findByPk(torneioId); 
   data = {
     status: true,
@@ -63,7 +75,7 @@ async function PartidasGeradas(torneioId) {
       type: "Todos vs Todos",
       status: now_torneio.status,
     },
-    PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
+    PartidasUser: agruparPorRodada(PartidasUser),
   };
   return data;
 }
