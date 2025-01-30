@@ -465,8 +465,9 @@ exports.eliminatoria = async (req, res) => {
     }
     // fechar o torneio depois de gerar as partidas
     await Torneio.update({ status: "current" }, { where: { id: torneioId } });
-    for (let i = 0; i < jogadoresInscritos.length; i++) {
-      if (i % 2 === 0) {
+    let len = jogadoresInscritos.length;
+    for (let i = 0; i < len; i++) {
+      if (i % 2 === 0 && i + 1 < len) {
         const existe = await vs.findAll({
           where: {
             jogador1Id: jogadoresInscritos[i].usuarioId,
@@ -1322,6 +1323,16 @@ exports.deleteTorneio = async (req, res) => {
         msg: "Usuário não autorizado",
       });
     }
+    await vs.destroy({
+      where: {
+        torneioId,
+      },
+    });
+    await user_toneio.destroy({
+      where: {
+        torneioId,
+      },
+    });
     await Torneio.destroy({
       where: {
         id: torneioId,
@@ -1354,7 +1365,7 @@ exports.updateTorneio = async (req, res) => {
   try {
     const torneioId = req.params.torneioId;
     const usuarioId = req.userId;
-    const { name, date_start, type, pass } = req.body;
+    const { name, date_start, type } = req.body;
     const torneio = await Torneio.findByPk(torneioId);
     if (!torneio) {
       return res.status(404).json({
@@ -1379,7 +1390,6 @@ exports.updateTorneio = async (req, res) => {
         name,
         date_start,
         type,
-        pass,
       },
       {
         where: {
