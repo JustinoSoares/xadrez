@@ -16,7 +16,7 @@ async function getCountry(country) {
     }
   }
 
-async function PartidasGeradas(torneioId, primary_torneio) {
+async function PartidasGeradas(torneioId) {
   const partidas = await vs.findAll({
     where: { torneioId: torneioId },
     order: [["id", "ASC"]],
@@ -49,17 +49,19 @@ async function PartidasGeradas(torneioId, primary_torneio) {
       torneioId,
     },
   });
+
+  const now_torneio = await Torneio.findByPk(torneioId); 
   data = {
     status: true,
     msg: "Todas partidas do torneio",
     torneio: {
       inscritos: subcribe.length,
-      usuarioId: primary_torneio.usuarioId,
-      torneioId: primary_torneio.id,
-      name: primary_torneio.name,
-      date_start: primary_torneio.date_start,
+      usuarioId: now_torneio.usuarioId,
+      torneioId: now_torneio.id,
+      name: now_torneio.name,
+      date_start: now_torneio.date_start,
       type: "Todos vs Todos",
-      status: primary_torneio.status,
+      status: now_torneio.status,
     },
     PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
   };
@@ -144,7 +146,7 @@ exports.AllvsAll = async (req, res) => {
     // fechar o torneio depois de gerar as partidas
     await Torneio.update({ status: "current" }, { where: { id: torneioId } });
     // retornar as partidas geradas
-    const data = await PartidasGeradas(torneioId, primary_torneio);
+    const data = await PartidasGeradas(torneioId);
 
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);

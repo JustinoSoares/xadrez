@@ -534,7 +534,8 @@ exports.eliminatoria = async (req, res) => {
         torneioId,
       },
     });
-
+    // fechar o torneio depois de gerar as partidas
+    await Torneio.update({ status: "current" }, { where: { id: torneioId } });
     const data = {
       status: true,
       msg: "Todas partidas do torneio",
@@ -865,8 +866,7 @@ exports.select_winner = async (req, res) => {
       },
     });
     if (PartidasUser.length >= 1 && type === "eliminatoria") {
-      if (verifyElim.length === 1 || verifyElim.length === 0)
-        {
+      if (verifyElim.length === 1 || verifyElim.length === 0) {
         await Torneio.update(
           { status: "closed" },
           {
@@ -874,12 +874,6 @@ exports.select_winner = async (req, res) => {
               id: torneioId,
             },
           }
-        );
-      } else {
-        // fechar o torneio depois de gerar as partidas
-        await Torneio.update(
-          { status: "current" },
-          { where: { id: torneioId } }
         );
       }
     }
