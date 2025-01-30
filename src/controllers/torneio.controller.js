@@ -1,5 +1,4 @@
 // src/controllers/torneioController.js
-
 const db = require("../../models"); // Ajuste o caminho conforme necessário
 const Torneio = db.Torneio; // Ajuste o caminho conforme necessário
 const Usuario = db.Usuario; // Ajuste o caminho conforme necessário
@@ -455,12 +454,12 @@ exports.eliminatoria = async (req, res) => {
       },
     });
 
-    if (jogadoresInscritos.length % 2 !== 0) {
-      return res.status(400).json({
-        status: false,
-        msg: "Número de jogadores inscritos deve ser par",
-      });
-    }
+    // if (jogadoresInscritos.length % 2 !== 0) {
+    //   return res.status(400).json({
+    //     status: false,
+    //     msg: "Número de jogadores inscritos deve ser par",
+    //   });
+    // }
 
     if (jogadoresInscritos.length < 1) {
       return res.status(400).json({
@@ -903,6 +902,7 @@ exports.select_winner = async (req, res) => {
         torneioId,
       },
     });
+    const now_torneio = await Torneio.findByPk(torneioId);
 
     // ranking individual do usuário
     const filteredRanking = await aux.ft_ranking(user.id, res, req);
@@ -914,12 +914,12 @@ exports.select_winner = async (req, res) => {
       msg: "Todas partidas do torneio",
       torneio: {
         inscritos: subcribe.length,
-        usuarioId: torneios.usuarioId,
-        torneioId: torneios.id,
-        name: torneios.name,
-        date_start: torneios.date_start,
+        usuarioId: now_torneio.usuarioId,
+        torneioId: now_torneio.id,
+        name: now_torneio.name,
+        date_start: now_torneio.date_start,
         type: type,
-        status: torneios.status,
+        status: now_torneio.status,
       },
       PartidasUser: PartidasUser.sort((a, b) => a.vsId - b.vsId),
     };
