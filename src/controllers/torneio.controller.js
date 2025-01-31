@@ -578,7 +578,7 @@ exports.close_torneio = async (req, res) => {
       });
     }
     const new_torneio = await Torneio.update(
-      { status: "closed" },
+      { status: "cancelled" },
       {
         where: {
           id: torneioId,
@@ -1228,13 +1228,14 @@ exports.rankings = async (req, res) => {
 
 exports.rank_partida = async (req, res) => {
   try {
-    const torneioId = req.params.torneioId;
+     const torneioId = req.params.torneioId;
     const filteredRanking = await aux.ft_rank_partida(torneioId, res, req);
     const data = {
       status: true,
       msg: "Ranking do Torneio",
       rank: filteredRanking,
     };
+    
     const io = req.app.get("socketio");
     io.emit("rank_torneio", data);
     return res.status(200).json({

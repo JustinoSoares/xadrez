@@ -30,7 +30,7 @@ module.exports = {
         },
       },
       status: {
-        type: Sequelize.ENUM('open', 'closed', 'current'),
+        type: Sequelize.ENUM('open', 'closed', 'current', "cancelled"),
         defaultValue: 'open',
         allowNull: false,
       },
