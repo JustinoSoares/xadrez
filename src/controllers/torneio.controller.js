@@ -587,6 +587,11 @@ exports.close_torneio = async (req, res) => {
     );
     const io = req.app.get("socketio");
     io.emit("status_torneio", new_torneio);
+    return res.status(200).json({
+      status: true,
+      msg: "Torneio cancelado com sucesso",
+      torneio : new_torneio,
+    });
   } catch (error) {
     res.status(500).json({
       status: false,
