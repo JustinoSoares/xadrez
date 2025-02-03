@@ -5,6 +5,8 @@ const torneioController = require('../controllers/torneio.controller');
 const validateTorneio = require('../validator/torneio.validate');
 const authorization = require('../middleware/authorization');
 const allvsallController = require('../controllers/allvsall.controllers');
+const eliminatoriaController = require('../controllers/eliminatoria.controller');
+const select_winner = require('../controllers/select_winner.controllor');
 const { route } = require('./user.router');
 
 const router = Router();
@@ -23,7 +25,7 @@ router.post('/torneios/subscribe/:torneioId', authorization, torneioController.s
 //Jogar todos contra todos
 router.post('/torneios/AllvsAll/:torneioId', authorization, allvsallController.AllvsAll);
 // Jogar eliminatória
-router.post('/torneios/eliminatoria/:torneioId', authorization, torneioController.eliminatoria);
+router.post('/torneios/eliminatoria/:torneioId', authorization, eliminatoriaController.eliminatoria);
 
 // ver as partidas de um torneio
 router.get('/torneios/partida/:torneioId', torneioController.partida);
@@ -31,7 +33,7 @@ router.get('/torneios/partida/:torneioId', torneioController.partida);
 // ver todos os usuários inscritos em um torneio
 router.get('/torneios/subscribed/:torneioId', torneioController.subscribed);
 //seleciona o  vencedor de um torneio
-router.post('/torneios/select_winner/:torneioId/:vsId/:usuarioId', torneioController.select_winner);
+router.post('/torneios/select_winner/:torneioId/:vsId/:usuarioId', select_winner.select_winner);
 
 //ver o vencedor de um torneio
 router.get('/torneios/top/:torneioId', torneioController.topTorneio);
