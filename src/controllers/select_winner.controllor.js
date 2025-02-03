@@ -4,6 +4,8 @@ const Usuario = db.Usuario; // Ajuste o caminho conforme necessário
 const user_toneio = db.UsuarioTorneio; // Ajuste o caminho conforme necessário
 const vs = db.Adversarios;
 const axios = require("axios");
+const aux = require("./aux.controller");
+
 
 async function getCountry(country) {
   try {
