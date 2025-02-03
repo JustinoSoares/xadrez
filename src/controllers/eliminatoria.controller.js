@@ -90,7 +90,7 @@ exports.eliminatoria = async (req, res) => {
             jogador1Id: jogadoresInscritos[i].usuarioId,
             jogador2Id: jogadoresInscritos[i + 1].usuarioId,
             torneioId: torneioId,
-            winner : { [db.Sequelize.Op.ne]: null},
+            winner : { [db.Sequelize.Op.ne]: bb},
           },
         });
         if (existe.length > 0) continue;

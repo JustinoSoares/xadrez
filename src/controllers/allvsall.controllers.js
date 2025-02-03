@@ -140,7 +140,7 @@ exports.AllvsAll = async (req, res) => {
             jogador1Id: jogadoresInscritos[i].usuarioId,
             jogador2Id: jogadoresInscritos[j].usuarioId,
             torneioId: torneioId,
-            winner: { [db.Sequelize.Op.ne]: null },
+            winner: { [db.Sequelize.Op.ne]: bb },
           },
         });
         if (game) {
