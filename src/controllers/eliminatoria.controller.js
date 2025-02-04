@@ -80,7 +80,7 @@ exports.eliminatoria = async (req, res) => {
     if (last_partidas.length) {
       rodada = last_partidas[0].rodada + 1;
     }
-    // fechar o torneio depois de gerar as partidas
+    // atualizar o status do torneio para current
     await Torneio.update({ status: "current" }, { where: { id: torneioId } });
     let len = jogadoresInscritos.length;
     for (let i = 0; i < len; i++) {

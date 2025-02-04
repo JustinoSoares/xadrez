@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const axios = require("axios");
 const aux = require("./aux.controller");
-const { Op, or, where } = require("sequelize");
+const { Op } = require("sequelize");
 
 async function getCountry(country) {
   try {
@@ -189,10 +189,15 @@ exports.getTorneios = async (req, res) => {
       ],
     });
 
-    const userSubscribed = await Promise.all(
+  const userSubscribed = await Promise.all(
       torneios.map(async (torneio) => {
         const bandeira = await getCountry(torneio.usuario.country);
-        //
+        const allTeams  = await user_toneio.findAll({
+          where: {
+            torneioId: torneio.id,
+            type: "team",
+          },
+        });
         const user_subscribed = await user_toneio.findAll({
           where: {
             torneioId: torneio.id,
@@ -203,11 +208,13 @@ exports.getTorneios = async (req, res) => {
           user_subscribed.map(async (sub) => {
             const user = await Usuario.findByPk(sub.usuarioId);
             const bandeira = await getCountry(user.country);
+            
             return {
               usuarioId: user.id,
               pontos: user.pontos,
               username: user.username,
               countryImg: bandeira,
+              teams : allTeams,
             };
           })
         );
@@ -224,6 +231,7 @@ exports.getTorneios = async (req, res) => {
             torneioId: torneio.id,
           },
         });
+
         torneio.usuario.country = bandeira;
         let type = torneio.type;
         if (type === "allvsall") {
@@ -268,6 +276,15 @@ exports.subcribeTorneio = async (req, res) => {
     const { torneioId } = req.params;
     const pass = req.body.pass;
     const usuarioId = req.userId;
+    const teamId = req.query.teamId || null;
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(422).json({
+        status: false,
+        errors: errors.array(),
+      });
+    }
 
     const torneio = await Torneio.findByPk(torneioId);
     if (!torneio) {
@@ -285,7 +302,14 @@ exports.subcribeTorneio = async (req, res) => {
     if (torneio.status !== "open") {
       return res.status(400).json({
         status: false,
-        msg: "Impossível, torneio encerrado!",
+        msg: "Já não é possível se inscrever nesse torneio!",
+      });
+    }
+
+    if (torneio.type === "teams" && !teamId) {
+      return res.status(400).json({
+        status: false,
+        msg: "Este torneio é apenas para times",
       });
     }
 
@@ -325,6 +349,8 @@ exports.subcribeTorneio = async (req, res) => {
     const subcribe = await user_toneio.create({
       usuarioId,
       torneioId,
+      type: teamId ? "team" : "player",
+      teamId,
       status: "on",
     });
     if (!subcribe) {
@@ -930,10 +956,10 @@ exports.deleteTorneio = async (req, res) => {
         msg: "Torneio não encontrado",
       });
     }
-    if (torneio.status !== "closed") {
+    if (torneio.status !== "closed" && torneio.status !== "cancelled") {
       return res.status(400).json({
         status: false,
-        msg: "Torneio não encerrado",
+        msg: "Esse torneio não pode ser deletado, tente cancelar primeiro",
       });
     }
 

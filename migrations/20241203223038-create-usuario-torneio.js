@@ -32,6 +32,20 @@ module.exports = {
         type: Sequelize.ENUM('on', 'off'),
         allowNull: false,
       },
+      type : {
+        type: Sequelize.ENUM('player', 'team'),
+        defaultValue: 'player',
+        allowNull: false,
+      },
+      teamId: {
+        type: Sequelize.UUID,
+        allowNull: true,
+        references: {
+          model: 'Teams', // Nome da tabela referenciada
+          key: 'id', // Chave primária na tabela referenciada
+        },
+        onDelete: 'CASCADE', // O que acontece ao deletar um time
+      },
       pontos : {
         type: Sequelize.INTEGER,
         defaultValue: 0,
@@ -46,7 +60,6 @@ module.exports = {
       },
     });
   },
-
   down: async (queryInterface) => {
     await queryInterface.dropTable('UsuarioTorneios');
   }

@@ -281,6 +281,7 @@ exports.updateUsuario = async (req, res) => {
   try {
     const usuarioId = req.params.id;
     const usuario = await Usuario.findByPk(usuarioId);
+    const { username, email, password, country } = req.body;
     if (!usuario) {
       return res.status(404).json({
         status: false,
@@ -293,7 +294,9 @@ exports.updateUsuario = async (req, res) => {
         ],
       });
     }
-    const { username, email, password, country } = req.body;
+    if (password && bcrypt.compare(req.body.password, usuario.password)) {
+        usuario.password = bcrypt.hashSync(password, 10);
+      }
     const bandeira = await getCountryFlag(country);
     if (bandeira == 0) {
       return res.status(404).json({
@@ -308,10 +311,11 @@ exports.updateUsuario = async (req, res) => {
         ],
       });
     }
+
     await usuario.update({
       username,
       email,
-      password: bcrypt.hashSync(password, 10),
+      password: usuario.password,
       country,
     });
     return res.status(200).json({

@@ -1,5 +1,4 @@
 // src/routes/torneioRoutes.js
-
 const { Router } = require('express');
 const torneioController = require('../controllers/torneio.controller');
 const validateTorneio = require('../validator/torneio.validate');
@@ -8,6 +7,7 @@ const allvsallController = require('../controllers/allvsall.controllers');
 const eliminatoriaController = require('../controllers/eliminatoria.controller');
 const select_winner = require('../controllers/select_winner.controllor');
 const { route } = require('./user.router');
+const createTeam = require('../controllers/createTeam.controller');
 
 const router = Router();
 
@@ -16,6 +16,7 @@ router.post('/torneios/create', authorization, validateTorneio.create, torneioCo
 
 //pegar cada torneio
 router.get('/torneios/each/:torneioId', torneioController.getTorneioById);
+
 //mostar todos os torneios
 router.get('/torneios/all', authorization, torneioController.getTorneios);
 
@@ -58,5 +59,5 @@ router.get("/torneios/owner_torneios/:usuarioId", torneioController.torneiosUsua
 router.delete("/torneios/delete/:torneioId", authorization, torneioController.deleteTorneio);
 router.put("/torneios/update/:torneioId", authorization, torneioController.updateTorneio);
 
-
+router.post("/torneios/create_team/:torneioId", authorization, createTeam.createTeam);
 module.exports = router;

@@ -30,6 +30,19 @@ module.exports = (sequelize) => {
         key: 'id',
       },
     },
+    type: {
+      type: DataTypes.ENUM('player', 'team'),
+      defaultValue: 'player',
+      allowNull: false,
+    },
+    teamId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: 'Teams',
+        key: 'id',
+      },
+    },
     torneioId: {
       type: DataTypes.UUID,
       allowNull: false,

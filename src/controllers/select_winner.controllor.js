@@ -5,6 +5,7 @@ const user_toneio = db.UsuarioTorneio; // Ajuste o caminho conforme necessário
 const vs = db.Adversarios;
 const axios = require("axios");
 const aux = require("./aux.controller");
+const general = require("../general/data.general");
 
 
 async function getCountry(country) {
@@ -17,18 +18,6 @@ async function getCountry(country) {
     return 0;
   }
 }
-
-const agruparPorRodada = (partidas) => {
-  const agrupadas = partidas.reduce((resultado, partida) => {
-    if (!resultado[partida.rodada]) {
-      resultado[partida.rodada] = [];
-    }
-    resultado[partida.rodada].push(partida);
-    return resultado;
-  }, {});
-
-  return Object.values(agrupadas); // Retorna apenas o array de rodadas
-};
 
 async function is_finish(torneioId) {
   const maxPoint = await user_toneio.findAll({
@@ -254,32 +243,12 @@ exports.select_winner = async (req, res) => {
     );
 
     const new_rank = ranking_data.filter((user) => user.usuario.pontos > 0);
-    const subcribe = await user_toneio.findAll({
-      where: {
-        torneioId,
-      },
-    });
+   
     const now_torneio = await Torneio.findByPk(torneioId);
 
     // ranking individual do usuário
     const filteredRanking = await aux.ft_ranking(user.id, res, req);
-    if (type === "allvsall") {
-      type = "Todos vs Todos";
-    } else type = "Eliminatória";
-    const data = {
-      status: true,
-      msg: "Todas partidas do torneio",
-      torneio: {
-        inscritos: subcribe.length,
-        usuarioId: now_torneio.usuarioId,
-        torneioId: now_torneio.id,
-        name: now_torneio.name,
-        date_start: now_torneio.date_start,
-        type: type,
-        status: now_torneio.status,
-      },
-      PartidasUser: agruparPorRodada(PartidasUser),
-    };
+    const data = general(now_torneio, PartidasUser, type);
 
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);

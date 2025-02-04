@@ -1,27 +1,23 @@
-// models/torneio.js
+// models/Team.js
 
 const { Model, DataTypes } = require("sequelize");
 
 module.exports = (sequelize) => {
-  class Torneio extends Model {
+  class Team extends Model {
     static associate(models) {
       // Define a associação com o modelo Usuario
-      Torneio.belongsTo(models.Usuario, {
+      Team.belongsTo(models.Usuario, {
         foreignKey: "usuarioId", // Chave estrangeira
         as: "usuario", // Nome da associação
       });
-      Torneio.hasMany(models.UsuarioTorneio, {
-        foreignKey: "torneioId",
-        as: "participantes",
-      });
-      Torneio.hasMany(models.Adversarios, {
-        foreignKey: "torneioId",
-        as: "adversarios",
+      Team.belongsTo(models.Torneio, {
+        foreignKey: "TorneioId", // Chave estrangeira
+        as: "torneio", // Nome da associação
       });
     }
   }
 
-  Torneio.init(
+  Team.init(
     {
       id: {
         type: DataTypes.UUID,
@@ -32,14 +28,6 @@ module.exports = (sequelize) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      pass: {
-        type: DataTypes.STRING,
-        allowNull: false,
-      },
-      date_start: {
-        type: DataTypes.DATE,
-        allowNull: true,
-      },
       usuarioId: {
         type: DataTypes.UUID,
         allowNull: false,
@@ -48,22 +36,24 @@ module.exports = (sequelize) => {
           key: "id", // Chave primária na tabela referenciada
         },
       },
-      status: {
-        type: DataTypes.ENUM('open', 'closed', "current", "cancelled"),
-        defaultValue: 'open',
+      torneioId: {
+        type: DataTypes.UUID,
         allowNull: false,
+        references: {
+          model: "Torneio", // Nome da tabela referenciada
+          key: "id", // Chave primária na tabela referenciada
+        },
       },
-      type: {
-        type: DataTypes.ENUM('allvsall', 'eliminatoria', "teams"),
-        defaultValue: 'allvsall',
+      status: {
+        type: DataTypes.ENUM('on', 'off'),
+        defaultValue: 'open',
         allowNull: false,
       },
     },
     {
       sequelize,
-      modelName: "Torneio",
+      modelName: "Team",
     }
   );
-
-  return Torneio;
+  return Team;
 };
