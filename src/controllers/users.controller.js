@@ -294,6 +294,16 @@ exports.updateUsuario = async (req, res) => {
         ],
       });
     }
+    if (req.userId !== usuario.id) {
+      return res.status(403).json({
+        status: false,
+        errors: [
+          {
+            msg: "Usuário não autorizado",
+          },
+        ],
+      });
+    }
     if (oldPassword && !bcrypt.compareSync(oldPassword, usuario.password)) {
       return res.status(400).json({
         status: false,
@@ -303,7 +313,8 @@ exports.updateUsuario = async (req, res) => {
           },
         ],
       });
-    } else if ((oldPassword && !newPassword) || (newPassword && !oldPassword)) {
+    } 
+    if ((oldPassword && !newPassword) || (newPassword && !oldPassword)) {
       return res.status(400).json({
         status: false,
         errors: [
@@ -312,12 +323,13 @@ exports.updateUsuario = async (req, res) => {
           },
         ],
       });
-    } else if (newPassword && newPassword.length < 6) {
+    } 
+    if (newPassword && newPassword.length < 6) {
       return res.status(400).json({
         status: false,
         errors: [
           {
-            msg: "Nova senha deve ter no mínimo 6 caracteres",
+            msg: "Nova senha deve ter no mínimo 4 caracteres",
           },
         ],
       });
@@ -337,7 +349,7 @@ exports.updateUsuario = async (req, res) => {
           {
             value: email,
             msg: "Este usuário já existe",
-            param: "email",
+            param: "email ou username",
             location: "body",
           },
         ],
