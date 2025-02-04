@@ -84,9 +84,9 @@ exports.createUsuario = async (req, res) => {
       country: country || "Angola",
       countryImg: bandeira,
       pontos,
-    }
-    const io = req.app.get('socketio');
-    io.emit("create_user", data); //emitindo evento 
+    };
+    const io = req.app.get("socketio");
+    io.emit("create_user", data); //emitindo evento
     return res.status(201).json({
       status: true,
       msg: "Usuário criado com sucesso",
@@ -220,7 +220,7 @@ exports.deleteUsuario = async (req, res) => {
       ],
     });
   }
-}
+};
 
 exports.getUsuarioById = async (req, res) => {
   try {
@@ -281,7 +281,7 @@ exports.updateUsuario = async (req, res) => {
   try {
     const usuarioId = req.params.id;
     const usuario = await Usuario.findByPk(usuarioId);
-    const { username, email, password, country } = req.body;
+    const { username, email, newPassword, oldPassword, country } = req.body;
     if (!usuario) {
       return res.status(404).json({
         status: false,
@@ -294,9 +294,56 @@ exports.updateUsuario = async (req, res) => {
         ],
       });
     }
-    if (password && bcrypt.compare(req.body.password, usuario.password)) {
-        usuario.password = bcrypt.hashSync(password, 10);
-      }
+    if (oldPassword && !bcrypt.compareSync(oldPassword, usuario.password)) {
+      return res.status(400).json({
+        status: false,
+        errors: [
+          {
+            msg: "Senha antiga incorreta",
+          },
+        ],
+      });
+    } else if ((oldPassword && !newPassword) || (newPassword && !oldPassword)) {
+      return res.status(400).json({
+        status: false,
+        errors: [
+          {
+            msg: "Senha antiga e nova senha são obrigatórias",
+          },
+        ],
+      });
+    } else if (newPassword && newPassword.length < 6) {
+      return res.status(400).json({
+        status: false,
+        errors: [
+          {
+            msg: "Nova senha deve ter no mínimo 6 caracteres",
+          },
+        ],
+      });
+    }
+    const usuarioExistente = await Usuario.findOne({
+      where: {
+        [Op.or]: [{ email }, { username }],
+        id: {
+          [Op.ne]: usuarioId,
+        },
+      },
+    });
+    if (usuarioExistente) {
+      return res.status(400).json({
+        status: false,
+        errors: [
+          {
+            value: email,
+            msg: "Este usuário já existe",
+            param: "email",
+            location: "body",
+          },
+        ],
+      });
+    }
+
     const bandeira = await getCountryFlag(country);
     if (bandeira == 0) {
       return res.status(404).json({
@@ -311,13 +358,26 @@ exports.updateUsuario = async (req, res) => {
         ],
       });
     }
-
-    await usuario.update({
+    if (!oldPassword && !newPassword) {
+      await usuario.update({
+        username,
+        email,
+        country,
+      });
+      return res.status(200).json({
+        status: true,
+        msg: "Usuário atualizado com sucesso",
+      });
+    }
+    else {
+       await usuario.update({
       username,
       email,
-      password: usuario.password,
+      password: bcrypt.hashSync(newPassword, 10),
       country,
     });
+    }
+   
     return res.status(200).json({
       status: true,
       msg: "Usuário atualizado com sucesso",
@@ -328,6 +388,7 @@ exports.updateUsuario = async (req, res) => {
       errors: [
         {
           msg: "Erro ao atualizar usuário",
+          error: error.message,
           param: "all",
           location: "body",
         },
