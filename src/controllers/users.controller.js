@@ -3,6 +3,9 @@
 const { Op } = require("sequelize");
 const db = require("../../models"); // Importa todos os modelos
 const Usuario = db.Usuario; // Acessa o modelo Usuario
+const Torneio = db.Torneio; // Acessa o modelo Torneio
+const team = db.Teams;
+const UsuarioTorneio = db.UsuarioTorneio; // Acessa o modelo UsuarioTorneio
 const bcrypt = require("bcrypt");
 const { validationResult } = require("express-validator");
 const axios = require("axios");
@@ -203,6 +206,33 @@ exports.deleteUsuario = async (req, res) => {
         ],
       });
     }
+    if (req.userId !== usuario.id) {
+      return res.status(403).json({
+        status: false,
+        errors: [
+          {
+            msg: "Usuário não autorizado",
+          },
+        ],
+      });
+    }
+
+    await UsuarioTorneio.destroy({
+      where: {
+        usuarioId,
+      },
+    });
+    await team.destroy({
+      where: {
+        usuarioId,
+      },
+    });
+
+    await Torneio.destroy({
+      where: {
+        usuarioId,
+      },
+    });
     await usuario.destroy();
     return res.status(200).json({
       status: true,
