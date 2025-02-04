@@ -996,8 +996,14 @@ exports.deleteTorneio = async (req, res) => {
       },
     });
     
+    const torneios = await Torneio.findAll({
+      where:{
+        usuarioId : usuarioId,
+      },
+      order: [["createdAt", "DESC"]],
+
+    });
     const io = req.app.get("socketio");
-    const torneios = await Torneio.findAll();
     const data = await Promise.all(
       torneios.map(async (torneio) => {
         const user = await Usuario.findByPk(torneio.usuarioId);
