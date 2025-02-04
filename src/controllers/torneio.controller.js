@@ -9,6 +9,7 @@ const { validationResult } = require("express-validator");
 const axios = require("axios");
 const aux = require("./aux.controller");
 const { Op } = require("sequelize");
+const general = require("../general/data.general");
 
 async function getCountry(country) {
   try {
@@ -994,6 +995,39 @@ exports.deleteTorneio = async (req, res) => {
         torneioId,
       },
     });
+    
+    const io = req.app.get("socketio");
+    const torneios = await Torneio.findAll();
+    const data = await Promise.all(
+      torneios.map(async (torneio) => {
+        const user = await Usuario.findByPk(torneio.usuarioId);
+        const inscritos = await user_toneio.findAll({
+          where: {
+            torneioId: torneio.id,
+          },
+        });
+        const bandeira = await getCountry(user.country);
+        let type = torneio.type;
+        if (type === "allvsall") {
+          type = "Todos vs Todos";
+        } else type = "Eliminatória";
+        return {
+          id: torneio.id,
+          name: torneio.name,
+          inscritos: inscritos.length,
+          date_start: torneio.date_start,
+          type: type,
+          status: torneio.status,
+          usuario: {
+            usuarioId: user.id,
+            pontos: user.pontos,
+            username: user.username,
+            countryImg: bandeira,
+          },
+        };
+      })
+    );
+    io.emit("torneio_deletado", data);
     return res.status(200).json({
       status: true,
       msg: "Torneio deletado com sucesso",
