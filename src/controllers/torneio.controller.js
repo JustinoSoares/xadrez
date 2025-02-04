@@ -956,7 +956,7 @@ exports.deleteTorneio = async (req, res) => {
         msg: "Torneio não encontrado",
       });
     }
-    if (torneio.status !== "closed" && torneio.status !== "cancelled") {
+    if (torneio.status !== "open" && torneio.status !== "cancelled") {
       return res.status(400).json({
         status: false,
         msg: "Esse torneio não pode ser deletado, tente cancelar primeiro",
