@@ -13,7 +13,7 @@ const agruparPorRodada = (partidas) => {
   return Object.values(agrupadas); // Retorna apenas o array de rodadas
 };
 
-async function general_data(partida, PartidasUser, type) {
+async function general_data(partida, PartidasUser, type, torneioId) {
   const subcribe = await user_toneio.findAll({
     where: {
       torneioId,

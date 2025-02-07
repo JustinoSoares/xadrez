@@ -248,7 +248,7 @@ exports.select_winner = async (req, res) => {
 
     // ranking individual do usuário
     const filteredRanking = await aux.ft_ranking(user.id, res, req);
-    const data = general(now_torneio, PartidasUser, type);
+    const data = await general(now_torneio, PartidasUser, type, torneioId);
 
     const io = req.app.get("socketio");
     io.emit("partidas_geradas", data);
