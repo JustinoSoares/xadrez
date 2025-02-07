@@ -88,7 +88,7 @@ exports.AllvsAll = async (req, res) => {
     const torneio = await Torneio.findByPk(torneioId);
 
     const primary_torneio = await Torneio.findAll({
-      where: { id: torneioId, status: "open" },
+      where: { id: torneioId },
       limit: 1,
     });
     if (!primary_torneio) {
