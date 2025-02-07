@@ -85,13 +85,12 @@ exports.AllvsAll = async (req, res) => {
   try {
     const torneioId = req.params.torneioId;
     const usuarioId = req.userId;
-    const torneio = await Torneio.findByPk(torneioId);
 
-    const primary_torneio = await Torneio.findAll({
+    const torneio = await Torneio.findAll({
       where: { id: torneioId },
       limit: 1,
     });
-    if (!primary_torneio) {
+    if (!torneio) {
       return res.status(400).json({
         status: false,
         msg: "Torneio não encontrado ou já encerrado",
