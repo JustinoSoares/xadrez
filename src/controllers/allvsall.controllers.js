@@ -6,15 +6,27 @@ const vs = db.Adversarios;
 const axios = require("axios");
 
 async function getCountry(country) {
-    try {
-      const response = await axios.get(
-        `https://restcountries.com/v3.1/name/${country}`
-      );
-      return response.data[0].flag;
-    } catch (error) {
-      return 0;
-    }
+  try {
+    const response = await axios.get(
+      `https://restcountries.com/v3.1/name/${country}`
+    );
+    return response.data[0].flag;
+  } catch (error) {
+    return 0;
   }
+}
+
+const agruparPorRodada = (partidas) => {
+  const agrupadas = partidas.reduce((resultado, partida) => {
+    if (!resultado[partida.rodada]) {
+      resultado[partida.rodada] = [];
+    }
+    resultado[partida.rodada].push(partida);
+    return resultado;
+  }, {});
+
+  return Object.values(agrupadas); // Retorna apenas o array de rodadas
+};
 
 async function PartidasGeradas(torneioId) {
   const partidas = await vs.findAll({
@@ -51,19 +63,7 @@ async function PartidasGeradas(torneioId) {
     },
   });
 
-  const agruparPorRodada = (partidas) => {
-    const agrupadas = partidas.reduce((resultado, partida) => {
-      if (!resultado[partida.rodada]) {
-        resultado[partida.rodada] = [];
-      }
-      resultado[partida.rodada].push(partida);
-      return resultado;
-    }, {});
-
-    return Object.values(agrupadas); // Retorna apenas o array de rodadas
-  };
-
-  const now_torneio = await Torneio.findByPk(torneioId); 
+  const now_torneio = await Torneio.findByPk(torneioId);
   data = {
     status: true,
     msg: "Todas partidas do torneio",
@@ -86,10 +86,7 @@ exports.AllvsAll = async (req, res) => {
     const torneioId = req.params.torneioId;
     const usuarioId = req.userId;
 
-    const torneio = await Torneio.findAll({
-      where: { id: torneioId },
-      limit: 1,
-    });
+    const torneio = await Torneio.findByPk(torneioId);
     if (!torneio) {
       return res.status(400).json({
         status: false,
@@ -109,7 +106,11 @@ exports.AllvsAll = async (req, res) => {
         msg: "Usuário não autorizado",
       });
     }
-    if (!torneio || torneio.status == "closed" || torneio.status == "cancelled") {
+    if (
+      !torneio ||
+      torneio.status == "closed" ||
+      torneio.status == "cancelled"
+    ) {
       return res.status(404).json({
         status: false,
         msg: "Torneio encerrado ou não encontrado",
@@ -127,6 +128,16 @@ exports.AllvsAll = async (req, res) => {
         status: false,
         msg: "O número de jogadores inscritos é insuficiente",
       });
+    }
+
+    const last_partidas = await vs.findAll({
+      where: { torneioId: torneioId },
+      order: [["rodada", "DESC"]],
+      limit: 1,
+    });
+    let rodada = 1;
+    if (last_partidas.length) {
+      rodada = last_partidas[0].rodada + 1;
     }
     let partidasGeradas = [];
     let confrontosRealizados = new Set();
@@ -150,6 +161,7 @@ exports.AllvsAll = async (req, res) => {
             jogador1Id: jogadoresInscritos[i].usuarioId,
             jogador2Id: jogadoresInscritos[j].usuarioId,
             torneioId: torneioId,
+            rodada : rodada,
           });
           partidasGeradas.push(partidas);
           confrontosRealizados.add(confrontoKey);
