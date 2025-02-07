@@ -110,7 +110,7 @@ exports.AllvsAll = async (req, res) => {
         msg: "Usuário não autorizado",
       });
     }
-    if (!torneio || torneio.status != "open") {
+    if (!torneio || torneio.status == "closed" || torneio.status == "cancelled") {
       return res.status(404).json({
         status: false,
         msg: "Torneio encerrado ou não encontrado",
