@@ -21,17 +21,17 @@ router.put('/usuarios/update/:id',authorization , usuarioController.updateUsuari
 router.delete('/usuarios/delete/:id', authorization, usuarioController.deleteUsuario);
 
 
-router.get("/googleAuth", async (req, res, next) => {
-    token = req.query.token;
-    const response = await fetch("http://localhost:3000/torneios/all", {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${token}`, // Envia o token no cabeçalho
-            "Content-Type": "application/json",
-        },
-    });
+// router.get("/googleAuth", async (req, res, next) => {
+//     token = req.query.token;
+//     const response = await fetch("http://localhost:3000/torneios/all", {
+//         method: "GET",
+//         headers: {
+//             "Authorization": `Bearer ${token}`, // Envia o token no cabeçalho
+//             "Content-Type": "application/json",
+//         },
+//     });
 
-    const data = await response.json();
-    res.json(data); // Retorna a resposta da nova rota
-})
+//     const data = await response.json();
+//     res.json(data); // Retorna a resposta da nova rota
+// })
 module.exports = router;
