@@ -36,8 +36,10 @@ router.get(
       where: { email: req.user._json.email },
     });
     const data = {
-      id: finNewUser.id,
-      username: finNewUser.username,
+      id: usuario.id,
+      email: usuario.email,
+      username: usuario.username,
+      tipo_usuario: usuario.tipo_usuario,
     }
     const token = jwt.sign(
       {
