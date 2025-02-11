@@ -18,7 +18,7 @@ const authorization = (req, res, next) => {
       });
     }
     req.userId = decoded.id || decoded.usuarioId;
-    console.log("DADOS: " + decoded);
+    console.log("DADOS: " + JSON.stringify(decoded));
     next();
   } catch (error) {
     res.status(401).json({
