@@ -160,6 +160,15 @@ exports.getTorneios = async (req, res) => {
     const order = req.query.order || "DESC";
     const attribute = req.query.attribute || "createdAt";
 
+    const users = await Usuario.findByPk(userId);
+    if (!users)
+    {
+      return res.status(403).json({
+        status: false,
+        msg : "Usuário não authorizado!"
+      });
+    }
+
     const whereConditional = {
       [Op.or]: [
         {
