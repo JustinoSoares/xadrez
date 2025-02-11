@@ -35,21 +35,20 @@ router.get(
     const finNewUser = await Usuario.findOne({
       where: { email: req.user._json.email },
     });
+    const data = {
+      id: finNewUser.id,
+      username: finNewUser.username,
+    }
     const token = jwt.sign(
       {
-        id: finNewUser.id,
-        username: finNewUser.username,
+        data,
       },
       process.env.JWT_SECRET_KEY,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
     //res.cookie("jwt", token, { httpOnly: true });
-    return res.json({
-      msg: "Login bem-sucedido",
-      id: finNewUser.id,
-      username: finNewUser.username,
-      token,
-    });
+   
+    return res.redirect(`http://localhost:3000/googleAuth?token=${token}&usuarioId=${data.id}&username=${data.username}`);
   }
 );
 
