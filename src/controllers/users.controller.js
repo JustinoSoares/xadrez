@@ -218,7 +218,7 @@ exports.deleteUsuario = async (req, res) => {
       })
     }
 
-    const is_valid = bcrypt.compare(password, usuario.password);
+    const is_valid = await bcrypt.compare(password, usuario.password);
 
     if (!is_valid)
     {
