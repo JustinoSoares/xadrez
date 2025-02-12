@@ -217,7 +217,13 @@ exports.deleteUsuario = async (req, res) => {
         ]
       })
     }
-
+    if (!password)
+      {
+        return res.status(400).json({
+          status: false,
+          msg: "A senha é obrigatória"
+        });
+      }
     const is_valid = await bcrypt.compare(password, usuario.password);
 
     if (!is_valid)

@@ -18,7 +18,7 @@ router.get('/usuarios/all', usuarioController.getUsuarios);
 
 router.get('/usuarios/each/:id', usuarioController.getUsuarioById);
 router.put('/usuarios/update/:id',authorization , usuarioController.updateUsuario);
-router.delete('/usuarios/delete/:id', authorization, usuarioController.deleteUsuario);
+router.post('/usuarios/delete/:id', authorization, usuarioController.deleteUsuario);
 
 
 //  router.get("/googleAuth", async (req, res, next) => {
