@@ -60,7 +60,8 @@ router.get(
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
     //res.cookie("jwt", token, { httpOnly: true });
-    return res.redirect(`http://localhost:3000/googleAuth?token=${token}&usuarioId=${data.id}&username=${data.username}`);
+    const url_base = process.env.URL_BASE;
+    return res.redirect(`${url_base}?token=${token}&usuarioId=${data.id}&username=${data.username}`);
   }
 );
 
