@@ -13,7 +13,13 @@ router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   async (req, res) => {
-    const url_base = env.process.URL_BASE;
+    try {
+
+
+      
+    } catch (error) {
+      
+    }
     // Login bem-sucedido
     const findUser = await Usuario.findOne({
       where: { email: req.user._json.email },
@@ -37,6 +43,12 @@ router.get(
     const finNewUser = await Usuario.findOne({
       where: { email: req.user._json.email },
     });
+    const data = {
+      id: finNewUser.id,
+        email: finNewUser.email,
+        username: finNewUser.username,
+        tipo_usuario: finNewUser.tipo_usuario,
+    }
     const token = jwt.sign(
       {
         id: finNewUser.id,
