@@ -2,6 +2,7 @@ const router = require("express").Router();
 const passport = require("passport");
 const jwt = require("jsonwebtoken");
 const db = require("../../models/index.js");
+require("dotenv");
 const Usuario = db.Usuario;
 router.get(
   "/auth/google",
@@ -46,8 +47,8 @@ router.get(
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
     //res.cookie("jwt", token, { httpOnly: true });
-   
-    return res.redirect(`https://cavaleiros-morphosiss.vercel.app/googleAuth?token=${token}&usuarioId=${data.id}&username=${data.username}`);
+   const url_base = env.process.URL_BASE;
+    return res.redirect(`${url_base}?token=${token}&usuarioId=${data.id}&username=${data.username}`);
   }
 );
 
