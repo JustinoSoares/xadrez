@@ -35,22 +35,19 @@ router.get(
     const finNewUser = await Usuario.findOne({
       where: { email: req.user._json.email },
     });
-    const data = {
-      id: finNewUser.id,
-      email: finNewUser.email,
-      username: finNewUser.username,
-      tipo_usuario: finNewUser.tipo_usuario,
-    }
     const token = jwt.sign(
       {
-        data,
+        id: finNewUser.id,
+        email: finNewUser.email,
+        username: finNewUser.username,
+        tipo_usuario: finNewUser.tipo_usuario,
       },
       process.env.JWT_SECRET_KEY,
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
     //res.cookie("jwt", token, { httpOnly: true });
    
-    return res.redirect(`http://localhost:3000/googleAuth?token=${token}&usuarioId=${data.id}&username=${data.username}`);
+    return res.redirect(`https://cavaleiros-morphosiss.vercel.app/googleAuth?token=${token}&usuarioId=${data.id}&username=${data.username}`);
   }
 );
 

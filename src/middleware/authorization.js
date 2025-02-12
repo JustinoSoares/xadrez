@@ -17,8 +17,7 @@ const authorization = (req, res, next) => {
         msg: "Acesso negado",
       });
     }
-    req.userId = decoded.id || decoded.data.id;
-    console.log("DADOS: " + JSON.stringify(decoded));
+    req.userId = decoded.id;
     next();
   } catch (error) {
     res.status(401).json({
