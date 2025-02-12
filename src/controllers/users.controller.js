@@ -4,7 +4,7 @@ const { Op } = require('sequelize')
 const db = require('../../models') // Importa todos os modelos
 const Usuario = db.Usuario // Acessa o modelo Usuario
 const Torneio = db.Torneio // Acessa o modelo Torneio
-const team = db.Teams
+const Teams = db.Teams
 const UsuarioTorneio = db.UsuarioTorneio // Acessa o modelo UsuarioTorneio
 const bcrypt = require('bcrypt')
 const { validationResult } = require('express-validator')
@@ -195,6 +195,7 @@ exports.deleteUsuario = async (req, res) => {
     const usuarioId = req.params.id
     const { password } = req.body
     const usuario = await Usuario.findByPk(usuarioId)
+
     if (!usuario) {
       return res.status(404).json({
         status: false,
@@ -207,6 +208,7 @@ exports.deleteUsuario = async (req, res) => {
         ]
       })
     }
+
     if (req.userId !== usuario.id) {
       return res.status(403).json({
         status: false,
@@ -217,40 +219,30 @@ exports.deleteUsuario = async (req, res) => {
         ]
       })
     }
-    if (!password)
-      {
-        return res.status(400).json({
-          status: false,
-          msg: "A senha é obrigatória"
-        });
-      }
-    const is_valid = await bcrypt.compare(password, usuario.password);
 
-    if (!is_valid)
-    {
+    if (!password) {
       return res.status(400).json({
         status: false,
-        msg: "Impossível deletar este usuário"
-      });
+        msg: 'A senha é obrigatória'
+      })
     }
 
-    await UsuarioTorneio.destroy({
-      where: {
-        usuarioId
-      }
-    })
-    await team.destroy({
-      where: {
-        usuarioId
-      }
-    })
+    const is_valid = await bcrypt.compare(password, usuario.password)
+    if (!is_valid) {
+      return res.status(400).json({
+        status: false,
+        msg: 'Senha incorreta'
+      })
+    }
 
-    await Torneio.destroy({
-      where: {
-        usuarioId
-      }
-    })
+    // Deletando dados relacionados primeiro
+    await Torneio.destroy({ where: { usuarioId } })
+    await UsuarioTorneio.destroy({ where: { usuarioId } })
+    // await Teams.destroy({ where: { usuarioId } })
+
+    // Deletando o usuário corretamente
     await usuario.destroy()
+
     return res.status(200).json({
       status: true,
       msg: 'Usuário deletado com sucesso'
@@ -261,6 +253,7 @@ exports.deleteUsuario = async (req, res) => {
       errors: [
         {
           msg: 'Erro ao deletar usuário',
+          error: error.message,
           param: 'all',
           location: 'body'
         }
@@ -268,6 +261,7 @@ exports.deleteUsuario = async (req, res) => {
     })
   }
 }
+
 
 exports.getUsuarioById = async (req, res) => {
   try {
