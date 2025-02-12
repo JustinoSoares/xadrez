@@ -48,7 +48,7 @@ router.get(
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
     //res.cookie("jwt", token, { httpOnly: true });
-    return res.redirect(`https://cavaleiros-morphosiss.vercel.app/googleAuth?token=${token}&usuarioId=${data.id}&username=${data.username}`);
+    return res.redirect(`http://localhost:3000/googleAuth?token=${token}&usuarioId=${data.id}&username=${data.username}`);
   }
 );
 
