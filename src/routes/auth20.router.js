@@ -13,6 +13,7 @@ router.get(
   "/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
   async (req, res) => {
+    const url_base = env.process.URL_BASE;
     // Login bem-sucedido
     const findUser = await Usuario.findOne({
       where: { email: req.user._json.email },
@@ -47,8 +48,7 @@ router.get(
       { expiresIn: process.env.JWT_EXPIRES_IN }
     );
     //res.cookie("jwt", token, { httpOnly: true });
-   const url_base = env.process.URL_BASE;
-    return res.redirect(`${url_base}?token=${token}&usuarioId=${data.id}&username=${data.username}`);
+    return res.redirect(`https://cavaleiros-morphosiss.vercel.app/googleAuth?token=${token}&usuarioId=${data.id}&username=${data.username}`);
   }
 );
 
