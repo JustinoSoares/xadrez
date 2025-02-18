@@ -1060,7 +1060,7 @@ exports.updateTorneio = async (req, res) => {
   try {
     const torneioId = req.params.torneioId;
     const usuarioId = req.userId;
-    const { name, date_start, type } = req.body;
+    const { name, date_start, type, password } = req.body;
     const torneio = await Torneio.findByPk(torneioId);
     if (!torneio) {
       return res.status(404).json({
@@ -1080,11 +1080,13 @@ exports.updateTorneio = async (req, res) => {
         msg: "Torneio não pode ser alterado!",
       });
     }
+  
     await Torneio.update(
       {
         name,
         date_start,
         type,
+        pass: password ? bcrypt.hashSync(password, 10) : torneio.pass,
       },
       {
         where: {
