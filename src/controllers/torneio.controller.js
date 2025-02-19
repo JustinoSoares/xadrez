@@ -1094,17 +1094,11 @@ exports.updateTorneio = async (req, res) => {
         },
       }
     );
+    const new_torneio = await Torneio.findByPk(torneioId);
     const io = req.app.get("socketio");
-    const torneios = await Torneio.findAll({
-      where:{
-        usuarioId : usuarioId,
-      },
-      order: [["createdAt", "DESC"]],
-
-    });
     const subscribed = await user_toneio.findAll({
       where: {
-        torneioId: torneio.id,
+        torneioId: new_torneio.id,
       },
     });
     const new_subs = await Promise.all(
@@ -1120,24 +1114,27 @@ exports.updateTorneio = async (req, res) => {
       })
     );
 
+    const user = await Usuario.findByPk(torneio.usuarioId);
+
     const active = await user_toneio.findOne({
       where: {
         usuarioId: usuarioId,
-        torneioId: torneio.id,
+        torneioId: new_torneio.id,
       },
     });
+    let new_type = new_torneio.type;
 
-    if (type === "allvsall") {
-      type = "Todos vs Todos";
-    } else type = "Eliminatória";
+    if (new_type === "allvsall") {
+      new_type = "Todos vs Todos";
+    } else new_type = "Eliminatória";
     const data = {
       inscritos: subscribed.length,
       torneio: {
-        id: torneio.id,
-        name: torneio.name,
-        date_start: torneio.date_start,
-        type: type,
-        status: torneio.status,
+        id: new_torneio.id,
+        name: new_torneio.name,
+        date_start: new_torneio.date_start,
+        type: new_type,
+        status: new_torneio.status,
         is_subscribed: active ? true : false,
         usuario: {
           usuarioId: usuarioId,
@@ -1146,7 +1143,7 @@ exports.updateTorneio = async (req, res) => {
           countryImg: await getCountry(user.country),
         },
         subscribed: {
-          torneioId: torneio.id,
+          torneioId: new_torneio.id,
           subscribed: new_subs,
         },
       },
