@@ -1094,6 +1094,64 @@ exports.updateTorneio = async (req, res) => {
         },
       }
     );
+    const io = req.app.get("socketio");
+    const torneios = await Torneio.findAll({
+      where:{
+        usuarioId : usuarioId,
+      },
+      order: [["createdAt", "DESC"]],
+
+    });
+    const subscribed = await user_toneio.findAll({
+      where: {
+        torneioId: torneio.id,
+      },
+    });
+    const new_subs = await Promise.all(
+      subscribed.map(async (sub) => {
+        const user = await Usuario.findByPk(sub.usuarioId);
+        const bandeira = await getCountry(user.country);
+        return {
+          usuarioId: user.id,
+          pontos: user.pontos,
+          username: user.username,
+          countryImg: bandeira,
+        };
+      })
+    );
+
+    const active = await user_toneio.findOne({
+      where: {
+        usuarioId: usuarioId,
+        torneioId: torneio.id,
+      },
+    });
+
+    if (type === "allvsall") {
+      type = "Todos vs Todos";
+    } else type = "Eliminatória";
+    const data = {
+      inscritos: subscribed.length,
+      torneio: {
+        id: torneio.id,
+        name: torneio.name,
+        date_start: torneio.date_start,
+        type: type,
+        status: torneio.status,
+        is_subscribed: active ? true : false,
+        usuario: {
+          usuarioId: usuarioId,
+          pontos: user.pontos,
+          username: user.username,
+          countryImg: await getCountry(user.country),
+        },
+        subscribed: {
+          torneioId: torneio.id,
+          subscribed: new_subs,
+        },
+      },
+    };
+    io.emit("novo_torneio", data);
     return res.status(200).json({
       status: true,
       msg: "Torneio atualizado com sucesso",
