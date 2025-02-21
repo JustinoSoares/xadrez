@@ -33,6 +33,10 @@ module.exports = {
         type: Sequelize.ENUM('admin', 'normal'),
         allowNull: false,
       },
+      code :{
+        type: Sequelize.STRING,
+        allowNull: true,
+      } ,
       pontos: {
         type: Sequelize.INTEGER,
         defaultValue: 0,

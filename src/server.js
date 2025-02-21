@@ -4,8 +4,11 @@ const { sequelize } = require("../models/index.js");
 const usuarioRouter = require("./routes/user.router");
 const torneioRouter = require("./routes/torneio.router");
 const auth20Router = require("./routes/auth20.router");
+const recoverRouter = require("./routes/recover.router");
 const bodyParser = require("body-parser");
 const cors = require("cors");
+const backup = require("../backup.js");
+
 
 const app = express();
 //swagger
@@ -119,6 +122,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/", usuarioRouter);
 app.use("/", torneioRouter);
 app.use("/", auth20Router);
+app.use("/", recoverRouter);
 
 // Exportar o `app` para o Vercel
 
