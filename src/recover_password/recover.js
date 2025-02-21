@@ -37,17 +37,52 @@ exports.send_code = async (req, res) => {
             To: [
               {
                 Email: email,
-                Name: `Jogador`
+                Name: `${user.username}`
               }
             ],
             Subject: 'Código para recuperação de senha',
             HTMLPart: `
-            <div style="text-align: center;">
-              <img src="https://res.cloudinary.com/dzpallmns/image/upload/v1740135918/pxj1dxbxxwx2xcejs7xi.png" alt="Logo Cavaleiro" style="width: 80px; height :; margin-bottom: 20px;">
-              <h3>Olá jogador,</h3>
-              <p>O seu código para recuperação de senha é:</p>
-              <h2 style="color: #4f47e5;">${code}</h2>
-            </div>
+            <!DOCTYPE html>
+            <html lang="pt-br">
+            <title>Online HTML Editor</title>
+
+            <head>
+            <meta charset="utf-8">
+            </head>
+          <body style="display: flex; justify-content: center; align-items: center;">
+           <div style="text-align: center; margin-top: 50px">
+                  <div style="
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  gap: 20px;
+                  width: 100%;
+                    "
+            >
+        <div style="display : flex; justify-content: center; align-items :center; gap: 5px;">
+        <img
+          src="https://res.cloudinary.com/dzpallmns/image/upload/v1740135918/pxj1dxbxxwx2xcejs7xi.png"
+          alt="Logo Cavaleiro"
+          style="width: 30px; height: 30px; margin: auto"
+        />
+        <h1>Cavaleiro</h1>
+        </div>
+      </div>
+      <h3>Verificação da sua conta!</h3>
+      <p>O seu código para recuperação de senha é:</p>
+      <div
+        style="
+          padding: 2px 30px;
+          margin-top: 20px;
+          border-radius: 10px;
+          border: 1px solid #ccc;
+          display: inline-block;
+        "
+      >
+        <h2 style="color: #4f47e5">${code}</h2>
+      </div>
+    </div>
+    </body>
           `
           }
         ]
