@@ -289,7 +289,7 @@ exports.getUsuarioById = async (req, res) => {
       })
     }
 
-    const best_payer = await Usuario.findAll({
+    const best_player = await Usuario.findAll({
       order: [['pontos', 'DESC']],
       limit: 1
     })
@@ -303,7 +303,7 @@ exports.getUsuarioById = async (req, res) => {
         email: usuario.email,
         country: usuario.country,
         countryImg: bandeira,
-        best_payer: best_payer[0].pontos == usuario.pontos ? true : false,
+        best_player: best_player[0].pontos == usuario.pontos ? true : false,
         pontos: usuario.pontos,
         createdAt: usuario.createdAt,
         updatedAt: usuario.updatedAt
