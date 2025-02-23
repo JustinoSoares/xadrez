@@ -1,6 +1,6 @@
 // src/controllers/users.controller.js
 
-const { Op } = require('sequelize')
+const { Op, where } = require('sequelize')
 const db = require('../../models') // Importa todos os modelos
 const Usuario = db.Usuario // Acessa o modelo Usuario
 const Torneio = db.Torneio // Acessa o modelo Torneio
@@ -262,7 +262,6 @@ exports.deleteUsuario = async (req, res) => {
   }
 }
 
-
 exports.getUsuarioById = async (req, res) => {
   try {
     const usuarioId = req.params.id
@@ -289,6 +288,11 @@ exports.getUsuarioById = async (req, res) => {
         ]
       })
     }
+
+    const best_payer = await Usuario.findAll({
+      order: [['pontos', 'DESC']],
+      limit: 1
+    })
     const bandeira = await getCountryFlag(usuario.country)
     return res.status(200).json({
       status: true,
@@ -299,6 +303,7 @@ exports.getUsuarioById = async (req, res) => {
         email: usuario.email,
         country: usuario.country,
         countryImg: bandeira,
+        best_payer: best_payer[0].pontos == usuario.pontos ? true : false,
         pontos: usuario.pontos,
         createdAt: usuario.createdAt,
         updatedAt: usuario.updatedAt
