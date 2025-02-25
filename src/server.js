@@ -51,11 +51,12 @@ const { Strategy: GoogleStrategy } = require("passport-google-oauth20");
 
 //criar o servidor socket io
 const server = http.createServer(app);
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 const io = new Server(server, {
   cors: {
-    origin: "*", //permitir conexao de qualquer origem
+    //permitir apenas os dois dominios seguintes
+    origin: [process.env.URL_LOCAL, process.env.URL_FRONTEND],
   },
 });
 app.use(async (req, res, next) => {
