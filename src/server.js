@@ -74,7 +74,7 @@ io.on("connection", (socket) => {
 });
 app.use(
   cors({
-    origin: "*", // Permitir apenas este domínio
+    origin: [process.env.URL_LOCAL, process.env.URL_FRONTEND], // Permitir apenas este domínio
     methods: ["GET", "POST", "PUT", "DELETE"], // Métodos permitidos
     allowedHeaders: ["Content-Type", "Authorization"], // Cabeçalhos permitidos
   })
